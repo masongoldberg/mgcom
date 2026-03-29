@@ -16,17 +16,14 @@
         overflow: hidden;
       }
 
-      /* TIGER IMAGE LAYER */
       .bg-image {
         position: absolute;
         inset: 0;
-        background: url("https://images.unsplash.com/photo-1723036123278-48b332ad8030?q=80&w=2068&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D") center/cover no-repeat;
-        opacity: 0.2;
-        filter: contrast(110%) saturate(90%);
+        background: url("https://images.unsplash.com/photo-1723036123278-48b332ad8030?q=80&w=2068&auto=format&fit=crop") center/cover no-repeat;
+        opacity: 0.25;
         z-index: -2;
-        }
+      }
 
-      /* your original glow */
       .blob {
         position: absolute;
         width: 400px;
@@ -36,21 +33,16 @@
         left: 20%;
         filter: blur(120px);
         z-index: -1;
+        opacity: 0.8;
       }
 
-      /* login */
       .login-btn {
         position: absolute;
         top: 20px;
         right: 20px;
         font-size: 14px;
-        opacity: 0.6;
+        opacity: 0.7;
         cursor: pointer;
-        transition: opacity 0.2s ease;
-      }
-
-      .login-btn:hover {
-        opacity: 1;
       }
 
       .container {
@@ -59,6 +51,8 @@
         left: 50%;
         transform: translate(-50%, -50%);
         text-align: center;
+        width: 90%;
+        max-width: 500px;
       }
 
       h1 {
@@ -79,12 +73,10 @@
         color: white;
         opacity: 0.6;
         font-style: italic;
-        transition: all 0.2s ease;
       }
 
       a:hover {
         opacity: 1;
-        letter-spacing: 2px;
       }
 
       .corner {
@@ -95,7 +87,6 @@
         color: #666;
       }
 
-      /* modal */
       .modal {
         position: fixed;
         inset: 0;
@@ -117,9 +108,7 @@
         font-weight: 400;
         font-size: 14px;
         color: #777;
-        letter-spacing: 1px;
         margin-bottom: 20px;
-        text-transform: lowercase;
       }
 
       input {
@@ -129,34 +118,55 @@
         border-bottom: 1px solid #333;
         padding: 10px 0;
         color: white;
-        font-size: 14px;
         margin-bottom: 14px;
       }
 
-      input:focus {
-        outline: none;
-        border-bottom: 1px solid #fc8403;
-      }
-
       button {
-        margin-top: 10px;
         background: none;
         border: none;
         color: #fc8403;
-        font-size: 14px;
         cursor: pointer;
-        opacity: 0.7;
       }
 
-      button:hover {
-        opacity: 1;
-      }
-
+      /* 🔥 MOBILE FIXES */
       @media (max-width: 600px) {
+
         h1 {
           font-size: 42px;
+          line-height: 1.1;
+        }
+
+        .links {
+          flex-direction: column;
+          gap: 14px;
+          margin-top: 24px;
+        }
+
+        a {
+          font-size: 16px;
+        }
+
+        .blob {
+          width: 260px;
+          height: 260px;
+          top: 10%;
+          left: 10%;
+          filter: blur(100px);
+        }
+
+        .bg-image {
+          opacity: 0.35;
+        }
+
+        .login-btn {
+          font-size: 13px;
+        }
+
+        .corner {
+          font-size: 10px;
         }
       }
+
     </style>
   </head>
 
