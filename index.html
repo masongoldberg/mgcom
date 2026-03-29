@@ -7,12 +7,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
     <style>
+      :root {
+        --text: #ffffff;
+        --muted: #9f9f9f;
+        --line: rgba(255, 255, 255, 0.16);
+        --panel: rgba(12, 12, 12, 0.72);
+        --accent: #fc8403;
+        --accent-soft: rgba(252, 132, 3, 0.18);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
       body {
         margin: 0;
         font-family: 'Inter', sans-serif;
         background: #000;
-        color: white;
-        height: 100vh;
+        color: var(--text);
+        min-height: 100vh;
         overflow: hidden;
       }
 
@@ -36,12 +49,23 @@
         opacity: 0.8;
       }
 
-      .login-btn {
+      .top-bar {
         position: absolute;
         top: 20px;
+        left: 20px;
         right: 20px;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .login-btn {
         font-size: 14px;
-        opacity: 0.7;
+        opacity: 0.78;
+      }
+
+      .login-btn {
         cursor: pointer;
       }
 
@@ -79,6 +103,10 @@
         opacity: 1;
       }
 
+      .modal.hidden {
+        display: none;
+      }
+
       .corner {
         position: absolute;
         bottom: 20px;
@@ -90,25 +118,56 @@
       .modal {
         position: fixed;
         inset: 0;
-        background: rgba(0,0,0,0.7);
+        background: rgba(0, 0, 0, 0.7);
         backdrop-filter: blur(20px);
-        display: none;
+        display: flex;
         align-items: center;
         justify-content: center;
         padding: 20px;
       }
 
       .modal-content {
-        text-align: center;
-        max-width: 320px;
+        text-align: left;
+        max-width: 360px;
         width: 100%;
+        padding: 24px;
+        border-radius: 24px;
+        border: 1px solid var(--line);
+        background: rgba(8, 8, 8, 0.88);
+        box-shadow: 0 16px 60px rgba(0, 0, 0, 0.38);
       }
 
       .modal h3 {
         font-weight: 400;
         font-size: 14px;
         color: #777;
-        margin-bottom: 20px;
+        margin: 0 0 8px;
+      }
+
+      .modal-title {
+        font-size: 28px;
+        margin: 0 0 10px;
+      }
+
+      .modal-copy {
+        color: var(--muted);
+        margin: 0 0 24px;
+        line-height: 1.5;
+      }
+
+      .form-status {
+        min-height: 22px;
+        margin-bottom: 12px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .form-status.error {
+        color: #ff8d8d;
+      }
+
+      .form-status.success {
+        color: #ffc17b;
       }
 
       input {
@@ -116,20 +175,51 @@
         background: transparent;
         border: none;
         border-bottom: 1px solid #333;
-        padding: 10px 0;
+        padding: 12px 0;
         color: white;
         margin-bottom: 14px;
+        font-size: 15px;
       }
 
       button {
         background: none;
         border: none;
-        color: #fc8403;
+        color: var(--accent);
         cursor: pointer;
+        font-size: 15px;
       }
 
-      /* 🔥 MOBILE FIXES */
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        align-items: center;
+        margin-top: 6px;
+      }
+
+      .button-primary {
+        padding: 10px 16px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        border: 1px solid rgba(252, 132, 3, 0.32);
+      }
+
+      .button-secondary {
+        color: var(--text);
+        opacity: 0.7;
+      }
+
+      .helper-copy {
+        margin-top: 18px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
       @media (max-width: 600px) {
+        body {
+          overflow: auto;
+        }
 
         h1 {
           font-size: 42px;
@@ -166,16 +256,16 @@
           font-size: 10px;
         }
       }
-
     </style>
   </head>
 
   <body>
-
     <div class="bg-image"></div>
     <div class="blob"></div>
 
-    <div class="login-btn" onclick="openLogin()">Log In</div>
+    <div class="top-bar">
+      <div class="login-btn" id="loginButton">Log In</div>
+    </div>
 
     <div class="container">
       <h1>Mason Goldberg</h1>
@@ -187,33 +277,166 @@
       </div>
     </div>
 
-    <div class="corner">v0.1</div>
+    <div class="corner">v0.2</div>
 
-    <div class="modal" id="modal">
+    <div class="modal hidden" id="modal">
       <div class="modal-content">
-        <h3>log in</h3>
-        <input placeholder="email">
-        <input placeholder="password" type="password">
-        <button onclick="fakeLogin()">enter</button>
+        <h3>account access</h3>
+        <h2 class="modal-title">Sign in</h2>
+
+        <div class="form-status" id="formStatus"></div>
+
+        <input id="emailInput" placeholder="email" type="email" autocomplete="email">
+        <input id="passwordInput" placeholder="password" type="password" autocomplete="current-password">
+
+        <div class="button-row">
+          <button class="button-primary" id="signInButton">Sign In</button>
+          <button class="button-secondary" id="closeButton">Close</button>
+        </div>
       </div>
     </div>
 
-    <script>
+    <script src="/api/auth-config"></script>
+    <script type="module">
+      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+      const modal = document.getElementById("modal");
+      const loginButton = document.getElementById("loginButton");
+      const closeButton = document.getElementById("closeButton");
+      const signInButton = document.getElementById("signInButton");
+      const formStatus = document.getElementById("formStatus");
+      const emailInput = document.getElementById("emailInput");
+      const passwordInput = document.getElementById("passwordInput");
+
+      const authConfig = window.AUTH_CONFIG || {};
+      const hasConfig = Boolean(authConfig.supabaseUrl && authConfig.supabaseAnonKey);
+      const supabase = hasConfig
+        ? createClient(authConfig.supabaseUrl, authConfig.supabaseAnonKey, {
+            auth: {
+              persistSession: true,
+              autoRefreshToken: true,
+              detectSessionInUrl: true
+            }
+          })
+        : null;
+
       function openLogin() {
-        document.getElementById("modal").style.display = "flex";
+        modal.classList.remove("hidden");
       }
 
-      function fakeLogin() {
-        alert("not wired up yet");
+      function closeLogin() {
+        modal.classList.add("hidden");
       }
 
-      window.onclick = function(e) {
-        const modal = document.getElementById("modal");
-        if (e.target === modal) {
-          modal.style.display = "none";
+      function setStatus(message, type = "") {
+        formStatus.textContent = message;
+        formStatus.className = `form-status ${type}`.trim();
+      }
+
+      function clearInputs() {
+        passwordInput.value = "";
+      }
+
+      function renderSession(session) {
+        if (!hasConfig) {
+          loginButton.textContent = "Auth not configured";
+          setStatus("Add SUPABASE_URL and SUPABASE_ANON_KEY in Vercel, then redeploy.", "error");
+          return;
         }
-      };
-    </script>
 
+        if (!session?.user) {
+          loginButton.textContent = "Log In";
+          return;
+        }
+
+        loginButton.textContent = "Account";
+      }
+
+      async function syncSession() {
+        if (!supabase) {
+          renderSession(null);
+          return;
+        }
+
+        const { data, error } = await supabase.auth.getSession();
+
+        if (error) {
+          setStatus(error.message, "error");
+          return;
+        }
+
+        renderSession(data.session);
+      }
+
+      async function signIn() {
+        if (!supabase) {
+          setStatus("Supabase is not configured yet.", "error");
+          return;
+        }
+
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
+        if (!email || !password) {
+          setStatus("Enter both email and password.", "error");
+          return;
+        }
+
+        setStatus("Signing in...");
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+        if (error) {
+          setStatus(error.message, "error");
+          return;
+        }
+
+        setStatus("Signed in.", "success");
+        clearInputs();
+        closeLogin();
+        window.alert("You've logged in now, congratulations!");
+        await syncSession();
+      }
+
+      loginButton.addEventListener("click", () => {
+        if (modal.classList.contains("hidden")) {
+          openLogin();
+        } else {
+          closeLogin();
+        }
+      });
+
+      closeButton.addEventListener("click", closeLogin);
+      signInButton.addEventListener("click", signIn);
+
+      [emailInput, passwordInput].forEach((input) => {
+        input.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            signIn();
+          }
+
+          if (event.key === "Escape") {
+            closeLogin();
+          }
+        });
+      });
+
+      window.addEventListener("click", (event) => {
+        if (event.target === modal) {
+          closeLogin();
+        }
+      });
+
+      if (!supabase) {
+        setStatus("Supabase config not found yet. Add Vercel env vars to finish setup.", "error");
+        renderSession(null);
+      } else {
+        supabase.auth.onAuthStateChange((_event, session) => {
+          renderSession(session);
+        });
+
+        await syncSession();
+      }
+    </script>
   </body>
 </html>
