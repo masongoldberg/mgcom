@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Apps | Mason Goldberg</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+      :root {
+        --text: #ffffff;
+        --muted: #9f9f9f;
+        --line: rgba(255, 255, 255, 0.16);
+        --panel: rgba(12, 12, 12, 0.72);
+        --accent: #fc8403;
+        --accent-soft: rgba(252, 132, 3, 0.18);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: 'Inter', sans-serif;
+        background: #000;
+        color: var(--text);
+        overflow-x: hidden;
+      }
+
+      .bg-image {
+        position: fixed;
+        inset: 0;
+        background: url("https://images.unsplash.com/photo-1586094332115-680788e0182f?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D") center/cover no-repeat;
+        opacity: 0.18;
+        z-index: -2;
+      }
+
+      .blob {
+        position: fixed;
+        width: 420px;
+        height: 420px;
+        background: radial-gradient(circle, #fc8403, transparent);
+        top: 8%;
+        right: 10%;
+        filter: blur(130px);
+        z-index: -1;
+        opacity: 0.72;
+      }
+
+      .page {
+        width: min(960px, calc(100% - 40px));
+        margin: 0 auto;
+        padding: 24px 0 56px;
+      }
+
+      .top-bar {
+        position: absolute;
+        top: 24px;
+        left: 20px;
+        right: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .home-link,
+      .logout-btn {
+        color: white;
+        text-decoration: none;
+        opacity: 0.78;
+        font-size: 14px;
+        font-style: normal;
+      }
+
+      .logout-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+      }
+
+      .hero {
+        margin-top: 92px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(44px, 7vw, 72px);
+        letter-spacing: -2px;
+      }
+
+      .subtitle {
+        max-width: 620px;
+        margin: 16px 0 0;
+        color: var(--muted);
+        line-height: 1.65;
+        font-size: 16px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 18px;
+        margin-top: 44px;
+      }
+
+      .card {
+        display: block;
+        padding: 22px;
+        border-radius: 24px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        backdrop-filter: blur(20px);
+        text-decoration: none;
+        color: var(--text);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.24);
+        transition: transform 160ms ease, border-color 160ms ease, opacity 160ms ease;
+      }
+
+      .card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(252, 132, 3, 0.32);
+      }
+
+      .card-label {
+        display: inline-block;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .card-title {
+        margin-top: 18px;
+        font-size: 28px;
+      }
+
+      .card-copy {
+        margin-top: 10px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .status {
+        margin-top: 30px;
+        color: var(--muted);
+        font-size: 14px;
+        min-height: 22px;
+      }
+
+      .status.error {
+        color: #ff8d8d;
+      }
+
+      .status.success {
+        color: #ffc17b;
+      }
+
+      .footer {
+        margin-top: 48px;
+        color: #666;
+        font-size: 12px;
+      }
+
+      @media (max-width: 600px) {
+        .page {
+          width: min(100% - 28px, 960px);
+          padding-top: 18px;
+        }
+
+        .hero {
+          margin-top: 52px;
+        }
+
+        .top-bar {
+          top: 20px;
+          left: 20px;
+          right: 20px;
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="bg-image"></div>
+    <div class="blob"></div>
+
+    <div class="page">
+      <div class="top-bar">
+        <a class="home-link" href="/">Home</a>
+        <button class="logout-btn" id="logoutButton">Log Out</button>
+      </div>
+
+      <section class="hero">
+        <h1>Apps</h1>
+        <p class="subtitle">
+          Your private workspace for internal tools and experiments. Only authenticated sessions can view this page.
+        </p>
+      </section>
+
+      <div class="grid">
+        <a class="card" href="#">
+          <span class="card-label">Internal</span>
+          <div class="card-title">Studio</div>
+          <div class="card-copy">A placeholder tile for your first private app.</div>
+        </a>
+
+        <a class="card" href="#">
+          <span class="card-label">Internal</span>
+          <div class="card-title">Notes</div>
+          <div class="card-copy">A private space for quick capture, references, and drafts.</div>
+        </a>
+
+        <a class="card" href="#">
+          <span class="card-label">Internal</span>
+          <div class="card-title">Ops</div>
+          <div class="card-copy">A starting point for admin flows, dashboards, or maintenance tools.</div>
+        </a>
+      </div>
+
+      <div class="status" id="status"></div>
+      <div class="footer">private access</div>
+    </div>
+
+    <script src="/api/auth-config"></script>
+    <script type="module">
+      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+      const status = document.getElementById("status");
+      const logoutButton = document.getElementById("logoutButton");
+      const authConfig = window.AUTH_CONFIG || {};
+      const hasConfig = Boolean(authConfig.supabaseUrl && authConfig.supabaseAnonKey);
+
+      function setStatus(message, type = "") {
+        status.textContent = message;
+        status.className = `status ${type}`.trim();
+      }
+
+      if (!hasConfig) {
+        setStatus("Auth is not configured for this environment.", "error");
+        throw new Error("Missing Supabase config");
+      }
+
+      const supabase = createClient(authConfig.supabaseUrl, authConfig.supabaseAnonKey, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
+
+      async function requireSession() {
+        const { data, error } = await supabase.auth.getSession();
+
+        if (error) {
+          setStatus(error.message, "error");
+          return;
+        }
+
+        if (!data.session?.user) {
+          window.location.replace("/");
+          return;
+        }
+
+        setStatus("You've logged in now, congratulations!", "success");
+      }
+
+      logoutButton.addEventListener("click", async () => {
+        const { error } = await supabase.auth.signOut();
+
+        if (error) {
+          setStatus(error.message, "error");
+          return;
+        }
+
+        window.location.replace("/");
+      });
+
+      supabase.auth.onAuthStateChange((event, session) => {
+        if (event === "SIGNED_OUT" || !session?.user) {
+          window.location.replace("/");
+        }
+      });
+
+      await requireSession();
+    </script>
+  </body>
+</html>
