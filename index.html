@@ -171,6 +171,22 @@
         color: #ffc17b;
       }
 
+      .page-message {
+        position: absolute;
+        left: 50%;
+        bottom: 64px;
+        transform: translateX(-50%);
+        width: min(440px, calc(100% - 40px));
+        text-align: center;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .page-message.hidden {
+        display: none;
+      }
+
       input {
         width: 100%;
         background: rgba(255, 255, 255, 0.04);
@@ -292,11 +308,13 @@
       </div>
     </div>
 
+    <div class="page-message hidden" id="pageMessage"></div>
+
     <div class="corner">v0.2</div>
 
     <div class="modal hidden" id="modal">
       <div class="modal-content">
-        <h3>Logi to view protected content</h3>
+        <h3>Log in to view protected content</h3>
         <h2 class="modal-title">Sign in</h2>
 
         <div class="form-status" id="formStatus"></div>
@@ -320,6 +338,7 @@
       const closeButton = document.getElementById("closeButton");
       const signInButton = document.getElementById("signInButton");
       const formStatus = document.getElementById("formStatus");
+      const pageMessage = document.getElementById("pageMessage");
       const emailInput = document.getElementById("emailInput");
       const passwordInput = document.getElementById("passwordInput");
 
@@ -348,6 +367,11 @@
         formStatus.className = `form-status ${type}`.trim();
       }
 
+      function setPageMessage(message = "") {
+        pageMessage.textContent = message;
+        pageMessage.classList.toggle("hidden", !message);
+      }
+
       function clearInputs() {
         passwordInput.value = "";
       }
@@ -365,6 +389,22 @@
         }
 
         loginButton.textContent = "Log In";
+      }
+
+      function applyRouteMessage() {
+        const params = new URLSearchParams(window.location.search);
+        const reason = params.get("message");
+
+        if (reason === "denied") {
+          setPageMessage("You don’t have access to that page.");
+          params.delete("message");
+          const nextSearch = params.toString();
+          const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ""}${window.location.hash}`;
+          window.history.replaceState({}, "", nextUrl);
+          return;
+        }
+
+        setPageMessage("");
       }
 
       async function syncSession() {
@@ -461,6 +501,8 @@
         setStatus("Supabase config not found yet. Add Vercel env vars to finish setup.", "error");
         renderSession(null);
       } else {
+        applyRouteMessage();
+
         supabase.auth.onAuthStateChange((_event, session) => {
           renderSession(session);
         });
