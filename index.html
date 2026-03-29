@@ -10,10 +10,47 @@
       body {
         margin: 0;
         font-family: 'Inter', sans-serif;
-        background: radial-gradient(circle at 30% 20%, #1a1a1a, #000);
+        background: #000;
         color: white;
         height: 100vh;
         overflow: hidden;
+      }
+
+      /* TIGER IMAGE LAYER */
+      .bg-image {
+        position: absolute;
+        inset: 0;
+        background: url("https://images.unsplash.com/photo-1723036123278-48b332ad8030?q=80&w=2068&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D") center/cover no-repeat;
+        opacity: 0.2;
+        filter: contrast(110%) saturate(90%);
+        z-index: -2;
+        }
+
+      /* your original glow */
+      .blob {
+        position: absolute;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, #fc8403, transparent);
+        top: 20%;
+        left: 20%;
+        filter: blur(120px);
+        z-index: -1;
+      }
+
+      /* login */
+      .login-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 14px;
+        opacity: 0.6;
+        cursor: pointer;
+        transition: opacity 0.2s ease;
+      }
+
+      .login-btn:hover {
+        opacity: 1;
       }
 
       .container {
@@ -22,20 +59,12 @@
         left: 50%;
         transform: translate(-50%, -50%);
         text-align: center;
-        max-width: 700px;
-        padding: 20px;
       }
 
       h1 {
         font-size: 72px;
         margin: 0;
         letter-spacing: -2px;
-      }
-
-      .subtitle {
-        margin-top: 10px;
-        font-size: 16px;
-        color: #aaa;
       }
 
       .links {
@@ -49,6 +78,7 @@
         text-decoration: none;
         color: white;
         opacity: 0.6;
+        font-style: italic;
         transition: all 0.2s ease;
       }
 
@@ -57,28 +87,6 @@
         letter-spacing: 2px;
       }
 
-      /* floating blob */
-      .blob {
-        position: absolute;
-        width: 400px;
-        height: 400px;
-        background: radial-gradient(circle, #fc8403, transparent);
-        top: 20%;
-        left: 20%;
-        filter: blur(120px);
-        z-index: -1;
-      }
-
-      @keyframes float {
-        from {
-          transform: translate(0, 0);
-        }
-        to {
-          transform: translate(100px, 80px);
-        }
-      }
-
-      /* little corner text */
       .corner {
         position: absolute;
         bottom: 20px;
@@ -87,13 +95,77 @@
         color: #666;
       }
 
-      
+      /* modal */
+      .modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.7);
+        backdrop-filter: blur(20px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .modal-content {
+        text-align: center;
+        max-width: 320px;
+        width: 100%;
+      }
+
+      .modal h3 {
+        font-weight: 400;
+        font-size: 14px;
+        color: #777;
+        letter-spacing: 1px;
+        margin-bottom: 20px;
+        text-transform: lowercase;
+      }
+
+      input {
+        width: 100%;
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid #333;
+        padding: 10px 0;
+        color: white;
+        font-size: 14px;
+        margin-bottom: 14px;
+      }
+
+      input:focus {
+        outline: none;
+        border-bottom: 1px solid #fc8403;
+      }
+
+      button {
+        margin-top: 10px;
+        background: none;
+        border: none;
+        color: #fc8403;
+        font-size: 14px;
+        cursor: pointer;
+        opacity: 0.7;
+      }
+
+      button:hover {
+        opacity: 1;
+      }
+
+      @media (max-width: 600px) {
+        h1 {
+          font-size: 42px;
+        }
+      }
     </style>
   </head>
 
   <body>
 
+    <div class="bg-image"></div>
     <div class="blob"></div>
+
+    <div class="login-btn" onclick="openLogin()">Log In</div>
 
     <div class="container">
       <h1>Mason Goldberg</h1>
@@ -107,20 +179,30 @@
 
     <div class="corner">v0.1</div>
 
+    <div class="modal" id="modal">
+      <div class="modal-content">
+        <h3>log in</h3>
+        <input placeholder="email">
+        <input placeholder="password" type="password">
+        <button onclick="fakeLogin()">enter</button>
+      </div>
+    </div>
+
     <script>
-      // trailing cursor dots (subtle but fun)
-      document.addEventListener("mousemove", (e) => {
-        const dot = document.createElement("div");
-        dot.className = "dot";
-        dot.style.left = e.pageX + "px";
-        dot.style.top = e.pageY + "px";
+      function openLogin() {
+        document.getElementById("modal").style.display = "flex";
+      }
 
-        document.body.appendChild(dot);
+      function fakeLogin() {
+        alert("not wired up yet");
+      }
 
-        setTimeout(() => {
-          dot.remove();
-        }, 500);
-      });
+      window.onclick = function(e) {
+        const modal = document.getElementById("modal");
+        if (e.target === modal) {
+          modal.style.display = "none";
+        }
+      };
     </script>
 
   </body>
