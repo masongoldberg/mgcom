@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/apps/todo",
+      "destination": "/apps/todo/index.html"
+    },
+    {
+      "source": "/apps/todo/",
+      "destination": "/apps/todo/index.html"
+    }
+  ]
+}

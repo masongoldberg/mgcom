@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Todo | Mason Goldberg</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+      :root {
+        --bg: #0b0d12;
+        --panel: rgba(17, 20, 28, 0.86);
+        --panel-strong: rgba(24, 28, 39, 0.96);
+        --line: rgba(255, 255, 255, 0.08);
+        --line-strong: rgba(255, 255, 255, 0.18);
+        --text: #f4f7fb;
+        --muted: #8b94a7;
+        --accent: #f97316;
+        --accent-soft: rgba(249, 115, 22, 0.14);
+        --success: #34d399;
+        --success-soft: rgba(52, 211, 153, 0.14);
+        --danger: #fca5a5;
+        --shadow: 0 30px 90px rgba(0, 0, 0, 0.34);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Sora", sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, rgba(249, 115, 22, 0.16), transparent 22%),
+          radial-gradient(circle at top right, rgba(52, 211, 153, 0.1), transparent 24%),
+          linear-gradient(180deg, #0b0d12 0%, #090b10 100%);
+      }
+
+      body.page-hidden .shell {
+        visibility: hidden;
+      }
+
+      .noise {
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+        background-size: 44px 44px;
+        mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.6), transparent 100%);
+        pointer-events: none;
+      }
+
+      .shell {
+        width: min(100% - 20px, 760px);
+        margin: 0 auto;
+        padding: 18px 0 56px;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .top-link,
+      .ghost-btn,
+      .item-link {
+        background: none;
+        border: none;
+        padding: 0;
+        color: inherit;
+        font: inherit;
+        text-decoration: none;
+      }
+
+      .top-link,
+      .ghost-btn {
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .app {
+        margin-top: 18px;
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        background: var(--panel);
+        backdrop-filter: blur(18px);
+        box-shadow: var(--shadow);
+      }
+
+      .app-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 16px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .app-title {
+        margin: 0;
+        font-size: clamp(32px, 9vw, 54px);
+        letter-spacing: -0.08em;
+        line-height: 0.92;
+      }
+
+      .app-meta {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .count-stack {
+        text-align: right;
+      }
+
+      .count-number {
+        font-size: clamp(24px, 7vw, 40px);
+        font-weight: 700;
+        letter-spacing: -0.08em;
+      }
+
+      .count-copy {
+        color: var(--muted);
+        font-size: 12px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .composer {
+        display: grid;
+        gap: 12px;
+        margin-top: 18px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .composer-row {
+        display: grid;
+        gap: 12px;
+      }
+
+      .field {
+        width: 100%;
+        padding: 16px 18px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--text);
+        font: inherit;
+        outline: none;
+        transition: border-color 160ms ease, background 160ms ease;
+      }
+
+      .field::placeholder {
+        color: rgba(244, 247, 251, 0.36);
+      }
+
+      .field:focus {
+        border-color: var(--line-strong);
+        background: rgba(255, 255, 255, 0.045);
+      }
+
+      .task-input {
+        font-size: 20px;
+        font-weight: 600;
+      }
+
+      .link-input {
+        font-size: 15px;
+      }
+
+      .composer-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+
+      .status {
+        min-height: 22px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .status.error {
+        color: var(--danger);
+      }
+
+      .submit {
+        padding: 14px 18px;
+        border: 1px solid rgba(249, 115, 22, 0.2);
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(249, 115, 22, 0.22), rgba(249, 115, 22, 0.12));
+        color: var(--text);
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .sections {
+        display: grid;
+        gap: 24px;
+        margin-top: 22px;
+      }
+
+      .section-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .section-title {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .section-count {
+        color: var(--muted);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 10px;
+      }
+
+      .item {
+        display: grid;
+        gap: 12px;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.025);
+      }
+
+      .item.done {
+        background: rgba(255, 255, 255, 0.015);
+      }
+
+      .item-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        gap: 14px;
+      }
+
+      .item-text {
+        margin: 0;
+        font-size: 17px;
+        line-height: 1.5;
+        font-weight: 600;
+        word-break: break-word;
+      }
+
+      .item.done .item-text {
+        color: rgba(244, 247, 251, 0.52);
+        text-decoration: line-through;
+        text-decoration-thickness: 1px;
+      }
+
+      .state {
+        flex-shrink: 0;
+        padding: 7px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      .state.open {
+        color: var(--accent);
+        background: var(--accent-soft);
+      }
+
+      .state.done {
+        color: var(--success);
+        background: var(--success-soft);
+      }
+
+      .item-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 16px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .meta-k {
+        color: rgba(244, 247, 251, 0.38);
+      }
+
+      .item-link {
+        color: #8ab4ff;
+        word-break: break-all;
+      }
+
+      .item-actions {
+        display: flex;
+        gap: 16px;
+      }
+
+      .ghost-btn {
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .empty {
+        padding: 8px 2px 0;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .footer {
+        margin-top: 18px;
+        color: rgba(139, 148, 167, 0.72);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      @media (min-width: 720px) {
+        .composer-row {
+          grid-template-columns: minmax(0, 1fr) 220px;
+        }
+
+        .item {
+          grid-template-columns: 1fr auto;
+          align-items: start;
+        }
+
+        .item-main {
+          min-width: 0;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .shell {
+          width: min(100% - 14px, 760px);
+          padding-top: 12px;
+        }
+
+        .app {
+          padding: 14px;
+          border-radius: 24px;
+        }
+
+        .app-head {
+          align-items: start;
+        }
+
+        .count-stack {
+          text-align: left;
+        }
+
+        .item-top {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="page-hidden">
+    <div class="noise"></div>
+
+    <div class="shell">
+      <div class="topbar">
+        <a class="top-link" href="/apps">Apps</a>
+        <button class="ghost-btn" id="logoutButton">Log Out</button>
+      </div>
+
+      <main class="app">
+        <section class="app-head">
+          <div>
+            <h1 class="app-title">Todo</h1>
+            <div class="app-meta">Persistent list for your account</div>
+          </div>
+
+          <div class="count-stack">
+            <div class="count-number" id="totalCount">0</div>
+            <div class="count-copy" id="countCopy">0 open</div>
+          </div>
+        </section>
+
+        <form class="composer" id="todoForm">
+          <input
+            class="field task-input"
+            id="todoInput"
+            name="todo"
+            type="text"
+            maxlength="240"
+            placeholder="What needs doing?"
+            autocomplete="off"
+          >
+
+          <div class="composer-row">
+            <input
+              class="field link-input"
+              id="todoLinkInput"
+              name="link"
+              type="url"
+              maxlength="500"
+              placeholder="Optional link"
+              inputmode="url"
+              autocomplete="off"
+            >
+            <button class="submit" type="submit">Add Item</button>
+          </div>
+
+          <div class="composer-actions">
+            <div class="status" id="status"></div>
+          </div>
+        </form>
+
+        <section class="sections">
+          <section>
+            <div class="section-head">
+              <h2 class="section-title">Open</h2>
+              <div class="section-count" id="openCount">0 items</div>
+            </div>
+            <ul class="list" id="openList"></ul>
+            <div class="empty" id="openEmpty">Nothing open.</div>
+          </section>
+
+          <section>
+            <div class="section-head">
+              <h2 class="section-title">Completed</h2>
+              <div class="section-count" id="doneCount">0 items</div>
+            </div>
+            <ul class="list" id="doneList"></ul>
+            <div class="empty" id="doneEmpty">Nothing completed yet.</div>
+          </section>
+        </section>
+      </main>
+
+      <div class="footer">private access</div>
+    </div>
+
+    <script src="/api/auth-config"></script>
+    <script type="module">
+      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+      const status = document.getElementById("status");
+      const logoutButton = document.getElementById("logoutButton");
+      const todoForm = document.getElementById("todoForm");
+      const todoInput = document.getElementById("todoInput");
+      const todoLinkInput = document.getElementById("todoLinkInput");
+      const openList = document.getElementById("openList");
+      const doneList = document.getElementById("doneList");
+      const openEmpty = document.getElementById("openEmpty");
+      const doneEmpty = document.getElementById("doneEmpty");
+      const openCount = document.getElementById("openCount");
+      const doneCount = document.getElementById("doneCount");
+      const totalCount = document.getElementById("totalCount");
+      const countCopy = document.getElementById("countCopy");
+      const authConfig = window.AUTH_CONFIG || {};
+      const hasConfig = Boolean(authConfig.supabaseUrl && authConfig.supabaseAnonKey);
+      let currentUser = null;
+
+      function setStatus(message, type = "") {
+        status.textContent = message;
+        status.className = `status ${type}`.trim();
+      }
+
+      function formatCreatedAt(value) {
+        try {
+          return new Intl.DateTimeFormat(undefined, {
+            month: "short",
+            day: "numeric",
+            hour: "numeric",
+            minute: "2-digit"
+          }).format(new Date(value));
+        } catch {
+          return value;
+        }
+      }
+
+      function normalizeLink(value) {
+        const trimmed = value.trim();
+
+        if (!trimmed) {
+          return "";
+        }
+
+        try {
+          const url = new URL(trimmed.startsWith("http://") || trimmed.startsWith("https://") ? trimmed : `https://${trimmed}`);
+          return url.toString();
+        } catch {
+          return null;
+        }
+      }
+
+      function renderSection(listNode, items, isDone) {
+        listNode.innerHTML = "";
+
+        items.forEach((item) => {
+          const listItem = document.createElement("li");
+          listItem.className = `item ${isDone ? "done" : ""}`.trim();
+
+          const main = document.createElement("div");
+          main.className = "item-main";
+
+          const top = document.createElement("div");
+          top.className = "item-top";
+
+          const text = document.createElement("p");
+          text.className = "item-text";
+          text.textContent = item.text;
+
+          const state = document.createElement("div");
+          state.className = `state ${isDone ? "done" : "open"}`;
+          state.textContent = isDone ? "Done" : "Open";
+
+          top.append(text, state);
+          main.append(top);
+
+          const meta = document.createElement("div");
+          meta.className = "item-meta";
+
+          const created = document.createElement("div");
+          created.innerHTML = `<span class="meta-k">Created</span> ${formatCreatedAt(item.created_at)}`;
+          meta.append(created);
+
+          if (item.link_url) {
+            const linkWrap = document.createElement("div");
+            const link = document.createElement("a");
+            link.className = "item-link";
+            link.href = item.link_url;
+            link.target = "_blank";
+            link.rel = "noreferrer";
+            link.textContent = item.link_url;
+            linkWrap.append(link);
+            meta.append(linkWrap);
+          }
+
+          main.append(meta);
+
+          const actions = document.createElement("div");
+          actions.className = "item-actions";
+
+          const doneButton = document.createElement("button");
+          doneButton.className = "ghost-btn";
+          doneButton.type = "button";
+          doneButton.textContent = isDone ? "Undo" : "Done";
+          doneButton.dataset.id = item.id;
+          doneButton.dataset.done = isDone ? "true" : "false";
+
+          const deleteButton = document.createElement("button");
+          deleteButton.className = "ghost-btn";
+          deleteButton.type = "button";
+          deleteButton.textContent = "Delete";
+          deleteButton.dataset.id = item.id;
+          deleteButton.dataset.action = "delete";
+
+          actions.append(doneButton, deleteButton);
+          listItem.append(main, actions);
+          listNode.append(listItem);
+        });
+      }
+
+      function renderItems(items) {
+        const openItems = items.filter((item) => !item.completed_at);
+        const doneItems = items.filter((item) => item.completed_at);
+
+        renderSection(openList, openItems, false);
+        renderSection(doneList, doneItems, true);
+
+        openEmpty.hidden = openItems.length > 0;
+        doneEmpty.hidden = doneItems.length > 0;
+        openCount.textContent = `${openItems.length} ${openItems.length === 1 ? "item" : "items"}`;
+        doneCount.textContent = `${doneItems.length} ${doneItems.length === 1 ? "item" : "items"}`;
+        totalCount.textContent = String(items.length);
+        countCopy.textContent = `${openItems.length} open`;
+      }
+
+      if (!hasConfig) {
+        setStatus("Auth is not configured for this environment.", "error");
+        throw new Error("Missing Supabase config");
+      }
+
+      const supabase = createClient(authConfig.supabaseUrl, authConfig.supabaseAnonKey, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
+
+      async function loadItems() {
+        if (!currentUser) {
+          renderItems([]);
+          return;
+        }
+
+        setStatus("Loading list...");
+
+        const { data, error } = await supabase
+          .from("todo_items")
+          .select("id, text, link_url, completed_at, created_at");
+
+        if (error) {
+          setStatus(error.message, "error");
+          renderItems([]);
+          return;
+        }
+
+        const items = (data || []).sort((a, b) => {
+          const aDone = Boolean(a.completed_at);
+          const bDone = Boolean(b.completed_at);
+
+          if (aDone !== bDone) {
+            return aDone ? 1 : -1;
+          }
+
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        });
+
+        renderItems(items);
+        setStatus("List is ready.");
+      }
+
+      async function requireSession() {
+        const { data, error } = await supabase.auth.getSession();
+
+        if (error) {
+          setStatus(error.message, "error");
+          return;
+        }
+
+        if (!data.session?.user) {
+          window.location.replace("/?message=denied");
+          return;
+        }
+
+        currentUser = data.session.user;
+        document.body.classList.remove("page-hidden");
+        await loadItems();
+      }
+
+      todoForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const text = todoInput.value.trim();
+        const linkUrl = normalizeLink(todoLinkInput.value);
+
+        if (!text) {
+          setStatus("Write a task first.", "error");
+          todoInput.focus();
+          return;
+        }
+
+        if (linkUrl === null) {
+          setStatus("That link does not look valid.", "error");
+          todoLinkInput.focus();
+          return;
+        }
+
+        if (!currentUser) {
+          setStatus("You need to be logged in to add items.", "error");
+          return;
+        }
+
+        setStatus("Adding item...");
+
+        const { error } = await supabase.from("todo_items").insert({
+          user_id: currentUser.id,
+          text,
+          link_url: linkUrl || null
+        });
+
+        if (error) {
+          setStatus(error.message, "error");
+          return;
+        }
+
+        todoInput.value = "";
+        todoLinkInput.value = "";
+        await loadItems();
+        setStatus("Item added.");
+        todoInput.focus();
+      });
+
+      document.body.addEventListener("click", async (event) => {
+        const button = event.target.closest(".ghost-btn");
+
+        if (!button || button === logoutButton) {
+          return;
+        }
+
+        const itemId = button.dataset.id;
+
+        if (!itemId) {
+          return;
+        }
+
+        if (button.dataset.action === "delete") {
+          setStatus("Deleting item...");
+
+          const { error } = await supabase
+            .from("todo_items")
+            .delete()
+            .eq("id", itemId);
+
+          if (error) {
+            setStatus(error.message, "error");
+            return;
+          }
+
+          await loadItems();
+          setStatus("Item deleted.");
+          return;
+        }
+
+        setStatus(button.dataset.done === "true" ? "Reopening item..." : "Marking item done...");
+
+        const { error } = await supabase
+          .from("todo_items")
+          .update({
+            completed_at: button.dataset.done === "true" ? null : new Date().toISOString()
+          })
+          .eq("id", itemId);
+
+        if (error) {
+          setStatus(error.message, "error");
+          return;
+        }
+
+        await loadItems();
+        setStatus(button.dataset.done === "true" ? "Item reopened." : "Item marked done.");
+      });
+
+      logoutButton.addEventListener("click", async () => {
+        const { error } = await supabase.auth.signOut();
+
+        if (error) {
+          setStatus(error.message, "error");
+          return;
+        }
+
+        window.location.replace("/");
+      });
+
+      supabase.auth.onAuthStateChange((event, session) => {
+        if (event === "SIGNED_OUT" || !session?.user) {
+          window.location.replace("/?message=denied");
+          return;
+        }
+
+        currentUser = session.user;
+      });
+
+      await requireSession();
+    </script>
+  </body>
+</html>
