@@ -1,0 +1,1873 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Aviadex | Mason Goldberg</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <style>
+      :root {
+        --bg: #fff8f4;
+        --surface: #ffffff;
+        --surface-soft: #fff1e4;
+        --surface-strong: #ffebd3;
+        --surface-accent: #87ceeb;
+        --line: #6f787d;
+        --line-soft: #bfc8cd;
+        --text: #281801;
+        --muted: #4f5a5f;
+        --accent: #0c6780;
+        --accent-2: #3d6751;
+        --accent-3: #616207;
+        --danger: #ba1a1a;
+        --shadow: #cfb48f;
+        --shadow-strong: #b29065;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--text);
+        font-family: "Plus Jakarta Sans", sans-serif;
+        background: var(--bg);
+        image-rendering: pixelated;
+      }
+
+      body.page-hidden .shell {
+        visibility: hidden;
+      }
+
+      .grid-overlay {
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(97, 98, 7, 0.08) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(97, 98, 7, 0.08) 1px, transparent 1px);
+        background-size: 16px 16px;
+        pointer-events: none;
+        opacity: 0.5;
+      }
+
+      .shell {
+        width: min(100% - 18px, 1120px);
+        margin: 0 auto;
+        padding: 10px 0 24px;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      .top-link,
+      .logout-btn,
+      .nav-btn,
+      .pixel-btn,
+      .bird-card {
+        font: inherit;
+      }
+
+      .top-link,
+      .logout-btn,
+      .nav-btn {
+        color: var(--accent);
+        text-decoration: none;
+        background: none;
+        border: none;
+        padding: 0;
+      }
+
+      .logout-btn,
+      .nav-btn {
+        cursor: pointer;
+      }
+
+      .hud {
+        display: grid;
+        gap: 10px;
+      }
+
+      .view {
+        display: none;
+        gap: 10px;
+      }
+
+      .view.is-active {
+        display: grid;
+      }
+
+      .app-nav {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .nav-pill {
+        border: 2px solid var(--line);
+        border-radius: 9999px;
+        background: var(--surface-soft);
+        color: var(--accent);
+        cursor: pointer;
+        font-family: "Press Start 2P", monospace;
+        font-size: 10px;
+        line-height: 1.6;
+        padding: 12px 10px;
+        text-align: center;
+        box-shadow: 4px 4px 0 0 var(--shadow);
+      }
+
+      .nav-pill.is-active {
+        background: var(--surface-accent);
+        color: #ffffff;
+        box-shadow: 4px 4px 0 0 #5ca7c7;
+      }
+
+      .hero,
+      .dex,
+      .panel,
+      .bird-card,
+      .count,
+      .status {
+        border: 2px solid var(--line);
+        border-radius: 24px;
+        box-shadow: 4px 4px 0 0 var(--shadow);
+      }
+
+      .hero,
+      .dex,
+      .panel {
+        background: var(--surface);
+      }
+
+      .hero {
+        padding: 14px;
+      }
+
+      .eyebrow,
+      .panel-label,
+      .meta-label,
+      .bird-id,
+      .entry-tag,
+      .status,
+      .footer,
+      .nav-btn {
+        font-family: "Press Start 2P", monospace;
+        letter-spacing: 0.06em;
+      }
+
+      .eyebrow {
+        color: var(--accent);
+        font-size: 10px;
+        line-height: 1.6;
+      }
+
+      h1 {
+        margin: 12px 0 0;
+        font-family: "Press Start 2P", monospace;
+        font-size: clamp(26px, 8vw, 48px);
+        line-height: 1.2;
+      }
+
+      .subtitle {
+        margin: 14px 0 0;
+        max-width: 720px;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.55;
+        font-weight: 500;
+      }
+
+      .counts {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .count {
+        background: var(--surface-soft);
+        padding: 12px;
+        border-radius: 20px;
+      }
+
+      .count-number {
+        margin-top: 8px;
+        font-size: clamp(32px, 9vw, 44px);
+        color: var(--accent);
+        font-family: "Press Start 2P", monospace;
+        line-height: 1.2;
+      }
+
+      .count-copy {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.45;
+      }
+
+      .dex {
+        display: grid;
+        gap: 10px;
+        padding: 10px;
+      }
+
+      .dex-roster {
+        display: grid;
+        gap: 10px;
+        padding: 10px;
+      }
+
+      .panel-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .roster-controls {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .panel-label {
+        color: var(--accent);
+        font-size: 10px;
+        line-height: 1.6;
+      }
+
+      .search {
+        width: 100%;
+        min-width: 0;
+        padding: 10px 12px;
+        border: 2px solid var(--line);
+        border-radius: 9999px;
+        background: var(--surface-soft);
+        color: var(--text);
+        font: inherit;
+        font-size: 16px;
+        outline: none;
+      }
+
+      .search::placeholder {
+        color: #7a8070;
+      }
+
+      .dex-body {
+        display: grid;
+        gap: 10px;
+      }
+
+      .roster-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .roster-card {
+        display: grid;
+        gap: 10px;
+        width: 100%;
+        padding: 12px;
+        text-align: left;
+        background: var(--surface-soft);
+        cursor: pointer;
+        border: 2px solid var(--line);
+        border-radius: 22px;
+        box-shadow: 4px 4px 0 0 var(--shadow);
+      }
+
+      .roster-card.is-active {
+        border-color: var(--accent);
+        background: var(--surface-strong);
+      }
+
+      .roster-card.is-locked {
+        opacity: 0.92;
+      }
+
+      .roster-card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        gap: 8px;
+      }
+
+      .roster-sprite {
+        width: 100%;
+        aspect-ratio: 1;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(180deg, #d8f0fb 0%, #b6def3 48%, #c7e7b5 48%, #c7e7b5 100%);
+        border: 2px solid var(--line);
+        border-radius: 18px;
+        padding: 8px;
+      }
+
+      .roster-name {
+        font-size: 15px;
+        line-height: 1.35;
+        font-weight: 700;
+      }
+
+      .roster-meta {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .meta-stack {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+      }
+
+      .roster-tag {
+        display: inline-block;
+        margin-top: 2px;
+        padding: 5px 8px;
+        border-radius: 9999px;
+        border: 2px solid var(--line);
+        background: #bfedd1;
+        color: var(--accent-2);
+        font-family: "Press Start 2P", monospace;
+        font-size: 9px;
+        line-height: 1.6;
+      }
+
+      .rarity-pill {
+        display: inline-block;
+        padding: 5px 8px;
+        border-radius: 9999px;
+        border: 2px solid var(--line);
+        font-family: "Press Start 2P", monospace;
+        font-size: 9px;
+        line-height: 1.6;
+        text-transform: uppercase;
+      }
+
+      .rarity-common {
+        background: #bfedd1;
+        color: #254f3a;
+      }
+
+      .rarity-uncommon {
+        background: #baeaff;
+        color: #004d62;
+      }
+
+      .rarity-rare {
+        background: #e1d2ff;
+        color: #5c3697;
+      }
+
+      .rarity-legendary {
+        background: #f4d67a;
+        color: #6a5200;
+      }
+
+      .list {
+        display: grid;
+        gap: 8px;
+        max-height: 620px;
+        overflow: auto;
+        padding-right: 2px;
+      }
+
+      .bird-card {
+        display: grid;
+        grid-template-columns: 76px minmax(0, 1fr);
+        gap: 10px;
+        align-items: center;
+        width: 100%;
+        padding: 10px;
+        text-align: left;
+        background: var(--surface-soft);
+        cursor: pointer;
+        border-radius: 20px;
+      }
+
+      .bird-card.is-active {
+        border-color: var(--accent);
+        background: var(--surface-strong);
+      }
+
+      .bird-card.is-locked {
+        opacity: 0.88;
+      }
+
+      .sprite-frame,
+      .detail-sprite-frame {
+        display: grid;
+        place-items: center;
+        background:
+          linear-gradient(180deg, #d8f0fb 0%, #b6def3 48%, #c7e7b5 48%, #c7e7b5 100%);
+        border: 2px solid var(--line);
+        border-radius: 18px;
+      }
+
+      .sprite-frame {
+        width: 76px;
+        height: 76px;
+      }
+
+      .sprite-frame svg,
+      .detail-sprite-frame svg,
+      .locked-outline,
+      .sprite-img {
+        image-rendering: pixelated;
+        shape-rendering: crispEdges;
+      }
+
+      .locked-outline {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .locked-asset {
+        position: relative;
+        width: 100%;
+        height: 100%;
+      }
+
+      .locked-asset img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        image-rendering: pixelated;
+      }
+
+      .locked-asset-outline {
+        filter:
+          brightness(0) saturate(100%)
+          drop-shadow(1px 0 0 #425b74)
+          drop-shadow(-1px 0 0 #425b74)
+          drop-shadow(0 1px 0 #425b74)
+          drop-shadow(0 -1px 0 #425b74)
+          drop-shadow(1px 1px 0 #425b74)
+          drop-shadow(-1px -1px 0 #425b74)
+          drop-shadow(1px -1px 0 #425b74)
+          drop-shadow(-1px 1px 0 #425b74);
+        opacity: 1;
+      }
+
+      .locked-asset-fill {
+        filter: brightness(0) saturate(100%) invert(97%) sepia(17%) saturate(294%) hue-rotate(318deg) brightness(104%) contrast(94%);
+      }
+
+      .sprite-img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+
+      .bird-meta {
+        min-width: 0;
+      }
+
+      .bird-id {
+        color: var(--accent-3);
+        font-size: 10px;
+        line-height: 1.6;
+      }
+
+      .bird-name {
+        margin-top: 6px;
+        font-size: 18px;
+        line-height: 1.2;
+        font-weight: 700;
+      }
+
+      .bird-region {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.45;
+      }
+
+      .panel {
+        padding: 12px;
+      }
+
+      .detail-top {
+        display: grid;
+        gap: 10px;
+      }
+
+      .detail-sprite-frame {
+        min-height: 260px;
+        padding: 14px;
+      }
+
+      .detail-sprite-frame.locked {
+        background: linear-gradient(180deg, #f6efe6 0%, #e9dcc8 48%, #dae6c8 48%, #dae6c8 100%);
+      }
+
+      .detail-name {
+        margin-top: 12px;
+        font-family: "Press Start 2P", monospace;
+        font-size: clamp(18px, 5.4vw, 28px);
+        line-height: 1.45;
+      }
+
+      .detail-subtitle {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.45;
+        font-weight: 600;
+      }
+
+      .entry-tag {
+        display: inline-block;
+        padding: 7px 9px;
+        border: 2px solid var(--line);
+        border-radius: 9999px;
+        color: var(--accent-2);
+        font-size: 10px;
+        line-height: 1.6;
+        background: #bfedd1;
+      }
+
+      .entry-meta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        margin-top: 12px;
+      }
+
+      .detail-grid {
+        display: grid;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .meta-row {
+        display: grid;
+        grid-template-columns: 110px minmax(0, 1fr);
+        gap: 10px;
+        padding: 9px 0;
+        border-top: 2px dashed var(--line-soft);
+      }
+
+      .meta-row:first-child {
+        border-top: 0;
+      }
+
+      .meta-label {
+        color: var(--accent);
+        font-size: 10px;
+        line-height: 1.6;
+      }
+
+      .meta-value {
+        font-size: 15px;
+        line-height: 1.55;
+      }
+
+      .actions {
+        display: grid;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .entry-nav {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .pixel-btn {
+        width: 100%;
+        padding: 14px 12px;
+        border: 2px solid var(--line);
+        border-radius: 9999px;
+        background: var(--surface-accent);
+        color: #ffffff;
+        cursor: pointer;
+        font-family: "Press Start 2P", monospace;
+        font-size: 11px;
+        line-height: 1.6;
+        text-transform: uppercase;
+        box-shadow: 4px 4px 0 0 #5ca7c7;
+      }
+
+      .pixel-btn.alt {
+        background: #e8e883;
+        color: #494900;
+        box-shadow: 4px 4px 0 0 #c9c968;
+      }
+
+      .pixel-btn:hover,
+      .pixel-btn:focus-visible {
+        transform: translate(2px, 2px);
+        box-shadow: 2px 2px 0 0 var(--shadow-strong);
+      }
+
+      .pixel-btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+      }
+
+      .notes {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .status {
+        padding: 10px 12px;
+        background: var(--surface-strong);
+        color: var(--accent);
+        font-size: 10px;
+        line-height: 1.7;
+      }
+
+      .status.error {
+        color: var(--danger);
+      }
+
+      .footer {
+        margin-top: 2px;
+        color: var(--accent);
+        font-size: 9px;
+        line-height: 1.7;
+        text-align: center;
+      }
+
+      .empty {
+        padding: 18px 10px;
+        border: 2px dashed var(--line);
+        border-radius: 20px;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.55;
+        background: var(--surface-soft);
+      }
+
+      @media (min-width: 860px) {
+        .dex-body {
+          grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
+          align-items: start;
+        }
+
+        .roster-grid {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 620px) {
+        .shell {
+          width: min(100% - 10px, 1120px);
+          padding-top: 8px;
+        }
+
+        .counts {
+          grid-template-columns: 1fr;
+        }
+
+        .app-nav {
+          grid-template-columns: 1fr;
+        }
+
+        .hero,
+        .dex,
+        .panel,
+        .bird-card,
+        .count,
+        .status {
+          border-width: 2px;
+          box-shadow: 4px 4px 0 0 var(--shadow);
+        }
+
+        .bird-card {
+          grid-template-columns: 64px minmax(0, 1fr);
+        }
+
+        .sprite-frame {
+          width: 64px;
+          height: 64px;
+        }
+
+        .detail-sprite-frame {
+          min-height: 220px;
+        }
+
+        .roster-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+    </style>
+  </head>
+
+  <body class="page-hidden">
+    <div class="grid-overlay"></div>
+
+    <div class="shell">
+      <div class="topbar">
+        <a class="top-link" href="/apps">Apps</a>
+        <button class="logout-btn" id="logoutButton">Log Out</button>
+      </div>
+
+      <main class="hud">
+        <section class="hero">
+          <div class="eyebrow">N.Y. Field Dex v0.1</div>
+          <h1>Aviadex</h1>
+          <p class="subtitle">
+            A DS-era inspired bird index for New York. Log sightings, unlock entries, and build a living roster one bird at a time.
+          </p>
+        </section>
+
+        <nav class="app-nav" id="appNav">
+          <button class="nav-pill" data-view="home" type="button">Home</button>
+          <button class="nav-pill" data-view="roster" type="button">Roster</button>
+          <button class="nav-pill" data-view="entry" type="button">Entry</button>
+        </nav>
+
+        <section class="view" id="homeView">
+          <section class="counts" id="counts"></section>
+
+          <section class="dex">
+            <div class="panel-head">
+              <div class="panel-label">Field Status</div>
+              <button class="nav-btn" id="resetButton" type="button">Reset Progress</button>
+            </div>
+
+            <aside class="panel" id="detailPanel"></aside>
+          </section>
+        </section>
+
+        <section class="view" id="rosterView">
+          <section class="dex-roster">
+            <div class="panel-head">
+              <div class="panel-label">Bird Roster</div>
+              <button class="nav-btn" id="resetButtonRoster" type="button">Reset Progress</button>
+            </div>
+
+            <input class="search" id="searchInput" type="search" placeholder="search ny birds">
+            <div class="roster-controls">
+              <button class="pixel-btn alt" id="rosterPrevButton" type="button">Previous</button>
+              <button class="pixel-btn" id="rosterNextButton" type="button">Next</button>
+            </div>
+            <div class="roster-grid" id="rosterGrid"></div>
+          </section>
+        </section>
+
+        <section class="view" id="entryView">
+          <section class="dex">
+            <div class="panel-head">
+              <div class="panel-label">Dex Entry</div>
+              <button class="nav-btn" id="viewRosterButton" type="button">Open Roster</button>
+            </div>
+
+            <aside class="panel" id="entryDetailPanel"></aside>
+          </section>
+        </section>
+
+        <div class="status" id="status"></div>
+        <div class="footer">DS-era inspired birding index. Progress is stored on this device.</div>
+      </main>
+    </div>
+
+    <script src="/api/auth-config"></script>
+    <script type="module">
+      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+      const BIRDS = [
+        {
+          id: "001",
+          slug: "blue-jay",
+          name: "Blue Jay",
+          type: "Corvid",
+          habitat: "Wooded suburbs, park edges, and oak stands",
+          season: "Year-round resident",
+          call: "Loud jeers and ringing calls",
+          rarity: "Common",
+          entry: "A restless blue sentinel with bold barring and zero interest in being ignored.",
+          notes: "Baseline sprite target: DS-era style, strong crest, bright blue upperparts, white face, black collar, and a defined palette without over-detailing.",
+          assetPath: "/apps/aviadex/assets/blue-jay-001-transparent.png",
+          colors: {
+            body: "#76a8ff",
+            wing: "#315db4",
+            beak: "#20283d",
+            head: "#dfeeff",
+            accent: "#0f172d",
+            leg: "#55617d"
+          },
+          sprite: [
+            "0000000000000000",
+            "0000000002200000",
+            "0000000023320000",
+            "0000000233332000",
+            "0000022333333200",
+            "0000222333333330",
+            "0002233333444330",
+            "0022333111444430",
+            "0223331111144430",
+            "0223331111114300",
+            "0222333111143000",
+            "0022233444430000",
+            "0000223333006000",
+            "0000022200006000",
+            "0000000000000000",
+            "0000000000000000"
+          ]
+        },
+        {
+          id: "002",
+          slug: "northern-cardinal",
+          name: "Northern Cardinal",
+          type: "Songbird",
+          habitat: "Brushy edges, feeders, and winter backyards",
+          season: "Year-round resident",
+          call: "Sharp chips and metallic whistles",
+          rarity: "Common",
+          entry: "A vivid red backyard monarch with a crest that makes even still moments feel dramatic.",
+          notes: "Cardinal sprite target: DS-era style, sharp crest, thick orange beak, saturated red body, and clean silhouette with restrained shading.",
+          assetPath: "/apps/aviadex/assets/northern-cardinal-002-transparent.png",
+          colors: {
+            body: "#d84b51",
+            wing: "#b32234",
+            beak: "#f2a13e",
+            head: "#2f1a22",
+            accent: "#ef6a73",
+            leg: "#7a4e34"
+          },
+          sprite: [
+            "0000000000000000",
+            "0000000000200000",
+            "0000000002220000",
+            "0000000223332000",
+            "0000002333333200",
+            "0000022333333330",
+            "0000222331133330",
+            "0002233111113330",
+            "0022331111111330",
+            "0223311111111300",
+            "0223331111113000",
+            "0022333111130000",
+            "0002233331006000",
+            "0000222200006000",
+            "0000000000000000",
+            "0000000000000000"
+          ]
+        },
+        {
+          id: "003",
+          slug: "rock-pigeon",
+          name: "Rock Pigeon",
+          type: "City Bird",
+          habitat: "Sidewalks, plazas, train stations, rooftops, and parks across NYC",
+          season: "Year-round resident",
+          call: "Soft coos and throaty murmurs",
+          rarity: "Common",
+          entry: "The default city bird, built from slate gray, oil-slick neck color, and absolute sidewalk confidence.",
+          notes: "Pigeon sprite target: DS-era style, compact chesty body, iridescent green-purple neck sheen, dark wing bars, and reddish feet.",
+          assetPath: "/apps/aviadex/assets/rock-pigeon-003-transparent.png",
+          colors: {
+            body: "#aeb7c4",
+            wing: "#4c5664",
+            beak: "#d8dbe2",
+            head: "#7e8899",
+            accent: "#7f5aa6",
+            leg: "#d97a6e"
+          },
+          sprite: [
+            "0000000000000000",
+            "0000000222200000",
+            "0000022333330000",
+            "0000223333332000",
+            "0002233333333200",
+            "0022333344433330",
+            "0223333444443330",
+            "0223333444444330",
+            "0223333444444430",
+            "0222333344444300",
+            "0022333334443000",
+            "0002233333330000",
+            "0000223333306600",
+            "0000022222006600",
+            "0000000000000000",
+            "0000000000000000"
+          ]
+        },
+        {
+          id: "004",
+          slug: "house-sparrow",
+          name: "House Sparrow",
+          type: "City Bird",
+          habitat: "Sidewalk cafes, stoops, shrubs, scaffolding, and transit edges",
+          season: "Year-round resident",
+          call: "Quick cheeps and dry chatter",
+          rarity: "Common",
+          entry: "A scrappy little sidewalk regular that treats crumbs, cracks, and crowded corners as prime real estate.",
+          notes: "House Sparrow sprite target: compact body, chestnut-brown upperparts, pale underside, dark bib, and quick city-bird energy.",
+          assetPath: "/apps/aviadex/assets/house-sparrow-004-transparent.png",
+          colors: {
+            body: "#d9ccb7",
+            wing: "#8f623b",
+            beak: "#505255",
+            head: "#6c402d",
+            accent: "#1f2024",
+            leg: "#c68371"
+          },
+          sprite: [
+            "0000000000000000",
+            "0000000222200000",
+            "0000022333330000",
+            "0000223333332000",
+            "0002233333333200",
+            "0022333444433330",
+            "0223334444443330",
+            "0223331111444330",
+            "0223331111444300",
+            "0023333114443000",
+            "0002233333330000",
+            "0000223333306000",
+            "0000022222006000",
+            "0000000000000000",
+            "0000000000000000",
+            "0000000000000000"
+          ]
+        },
+        {
+          id: "005",
+          slug: "american-robin",
+          name: "American Robin",
+          type: "Thrush",
+          habitat: "Lawns, parks, and neighborhood trees across New York",
+          season: "Year-round, especially active in spring",
+          call: "Cheerful caroling phrases at dawn",
+          rarity: "Common",
+          entry: "The orange-breasted yard runner that treats every wet patch of grass like a treasure map.",
+          notes: "One of the easiest starter sightings in New York. Look for the upright stance and warm brick-orange chest.",
+          assetPath: "/apps/aviadex/assets/american-robin-005-transparent.png",
+          colors: {
+            body: "#c46b42",
+            wing: "#575f76",
+            beak: "#f2bf54",
+            head: "#32394b",
+            accent: "#f6f1df",
+            leg: "#9f6741"
+          },
+          sprite: [
+            "0000000000000000",
+            "0000000222200000",
+            "0000002333322000",
+            "0000023333333200",
+            "0000022333333320",
+            "0000222444333330",
+            "0002244444333330",
+            "0022441111433330",
+            "0222411111444330",
+            "0222411111144300",
+            "0222441111113000",
+            "0022244111110000",
+            "0000222411006000",
+            "0000022210006000",
+            "0000000000000000",
+            "0000000000000000"
+          ]
+        },
+        {
+          id: "006",
+          slug: "european-starling",
+          name: "European Starling",
+          type: "Songbird",
+          habitat: "Sidewalk flocks, lawns, building edges, and winter roosts",
+          season: "Year-round resident",
+          call: "Whistles, clicks, and mimicry phrases",
+          rarity: "Common",
+          entry: "A dark city shimmer-bird that looks plain at a glance and metallic when the light finally catches it.",
+          notes: "Starling sprite target: compact dark body, short tail, sharp yellow beak, and restrained green-purple iridescence.",
+          assetPath: "/apps/aviadex/assets/european-starling-006-transparent.png",
+          colors: {
+            body: "#2a2d36",
+            wing: "#1a1c22",
+            beak: "#d1a23d",
+            head: "#3e4555",
+            accent: "#4a937a",
+            leg: "#b87b54"
+          },
+          sprite: [
+            "0000000000000000",
+            "0000000222200000",
+            "0000022333330000",
+            "0000223333332000",
+            "0002233333333200",
+            "0022333334443330",
+            "0223333344444330",
+            "0223333444444430",
+            "0223333444444300",
+            "0023333444443000",
+            "0002233333330000",
+            "0000223333306000",
+            "0000022222006000",
+            "0000000000000000",
+            "0000000000000000",
+            "0000000000000000"
+          ]
+        },
+        {
+          id: "007",
+          slug: "mourning-dove",
+          name: "Mourning Dove",
+          type: "Dove",
+          habitat: "Open streetscapes, rooftops, fields, and wires",
+          season: "Year-round resident",
+          call: "Soft, melancholy cooing",
+          rarity: "Common",
+          entry: "A soft-toned city glider that makes even power lines look peaceful.",
+          notes: "Slim, tan-gray, long pointed tail, and a gentle round head.",
+          assetPath: "/apps/aviadex/assets/mourning-dove-007-transparent.png",
+          colors: {
+            body: "#b8a392",
+            wing: "#8b7767",
+            beak: "#2d3340",
+            head: "#cdb8a7",
+            accent: "#5f4d43",
+            leg: "#a1656f"
+          },
+          sprite: [
+            "0000000000000000",
+            "0000000222200000",
+            "0000022333332000",
+            "0000223333333200",
+            "0002233333333330",
+            "0022333333344330",
+            "0223333111444430",
+            "0223331111144430",
+            "0223331111114300",
+            "0022333111113000",
+            "0002233331130000",
+            "0000223333300000",
+            "0000022222006000",
+            "0000000000006000",
+            "0000000000000000",
+            "0000000000000000"
+          ]
+        },
+        {
+          id: "008",
+          slug: "black-capped-chickadee",
+          name: "Black-capped Chickadee",
+          type: "Songbird",
+          habitat: "Woodlots, feeders, and forest edges upstate",
+          season: "Year-round resident",
+          call: "Bright fee-bee whistle and soft chick-a-dee calls",
+          rarity: "Common",
+          entry: "A tiny acrobat that turns every branch into a balance beam and every feeder into a stage.",
+          notes: "Small, compact, black cap and bib, pale cheeks, and quick flitting movement.",
+          colors: {
+            body: "#d6d9dd",
+            wing: "#70747c",
+            beak: "#1e2431",
+            head: "#141922",
+            accent: "#f2efe6",
+            leg: "#6d768a"
+          },
+          sprite: [
+            "0000000000000000",
+            "0000000222200000",
+            "0000022333320000",
+            "0000223333332000",
+            "0002233111333200",
+            "0022331111133300",
+            "0223311111113300",
+            "0223311111144300",
+            "0222331111444300",
+            "0022233114443000",
+            "0002233444430000",
+            "0000223333300000",
+            "0000022222006000",
+            "0000000000006000",
+            "0000000000000000",
+            "0000000000000000"
+          ]
+        },
+        {
+          id: "009",
+          slug: "red-tailed-hawk",
+          name: "Red-tailed Hawk",
+          type: "Raptor",
+          habitat: "Highways, park edges, and urban thermals",
+          season: "Year-round resident",
+          call: "Classic descending scream",
+          rarity: "Uncommon",
+          entry: "The broad-winged air boss of city thermals and roadside poles.",
+          notes: "Chunky buteo silhouette, pale chest, and a warm rusty tail on adults.",
+          colors: {
+            body: "#a77a4e",
+            wing: "#6c4d35",
+            beak: "#d7a84a",
+            head: "#efe3cb",
+            accent: "#934c3f",
+            leg: "#b08c54"
+          },
+          sprite: [
+            "0000000000000000",
+            "0000000222200000",
+            "0000022333332000",
+            "0000223333333200",
+            "0002233311133330",
+            "0022333111113330",
+            "0222331111114330",
+            "0222331111144430",
+            "0222331111444430",
+            "0022333114444300",
+            "0002233444443000",
+            "0000223333330000",
+            "0000022233306000",
+            "0000000000006000",
+            "0000000000000000",
+            "0000000000000000"
+          ]
+        },
+        {
+          id: "010",
+          slug: "canada-goose",
+          name: "Canada Goose",
+          type: "Waterfowl",
+          habitat: "Lakes, athletic fields, and city waterfronts",
+          season: "Common migrant and resident",
+          call: "Deep honks in loose formation",
+          rarity: "Common",
+          entry: "A parade-marching grazer with a black neck and the confidence of a much larger dinosaur.",
+          notes: "Big body, black neck, white cheek patch, and a steady waddling walk.",
+          colors: {
+            body: "#8d6a48",
+            wing: "#5a402c",
+            beak: "#171d27",
+            head: "#171d27",
+            accent: "#f0ede4",
+            leg: "#8c6e45"
+          },
+          sprite: [
+            "0000000002200000",
+            "0000000003300000",
+            "0000000023300000",
+            "0000000233322000",
+            "0000022333333200",
+            "0000223333333330",
+            "0022333333444330",
+            "0223333311444430",
+            "0223333111144430",
+            "0223331111114300",
+            "0023333111113000",
+            "0002233333330000",
+            "0000222233306000",
+            "0000000000006000",
+            "0000000000000000",
+            "0000000000000000"
+          ]
+        },
+        {
+          id: "011",
+          slug: "mallard",
+          name: "Mallard",
+          type: "Duck",
+          habitat: "Ponds, creeks, and park lakes statewide",
+          season: "Year-round resident",
+          call: "Classic duck quacks and soft whistles",
+          rarity: "Common",
+          entry: "The park-lake default, only brighter and more elegant when you stop to actually look.",
+          notes: "Male has green head and yellow bill; female is mottled brown with an orange bill.",
+          colors: {
+            body: "#7a6d58",
+            wing: "#5b4c3d",
+            beak: "#f0cd47",
+            head: "#258f72",
+            accent: "#e4efe4",
+            leg: "#d49a43"
+          },
+          sprite: [
+            "0000000000000000",
+            "0000000222200000",
+            "0000022333332000",
+            "0000223333333200",
+            "0002233333333330",
+            "0022333311144330",
+            "0223331111144430",
+            "0223331111444430",
+            "0222333111444300",
+            "0022333344443000",
+            "0002233333330000",
+            "0000222333300000",
+            "0000022222006000",
+            "0000000000006000",
+            "0000000000000000",
+            "0000000000000000"
+          ]
+        },
+        {
+          id: "012",
+          slug: "great-blue-heron",
+          name: "Great Blue Heron",
+          type: "Wader",
+          habitat: "Marshes, estuaries, river edges, and quiet ponds",
+          season: "Spring through fall, some winter locally",
+          call: "Harsh croak in flight",
+          rarity: "Uncommon",
+          entry: "A slow, impossible-looking marsh stalker that seems stitched together from patience.",
+          notes: "Very tall, blue-gray, dagger bill, folded neck in flight, statuesque while hunting.",
+          colors: {
+            body: "#8aa0b8",
+            wing: "#5a6f89",
+            beak: "#d6a43d",
+            head: "#d9e2ef",
+            accent: "#232f42",
+            leg: "#7f7054"
+          },
+          sprite: [
+            "0000000002200000",
+            "0000000003300000",
+            "0000000003300000",
+            "0000000023300000",
+            "0000000233330000",
+            "0000022333332200",
+            "0000223333333330",
+            "0002233333444330",
+            "0022333311444430",
+            "0223333111144430",
+            "0223331111114300",
+            "0023331111130000",
+            "0002233333306000",
+            "0000222200006000",
+            "0000000000006000",
+            "0000000000000000"
+          ]
+        },
+        {
+          id: "013",
+          slug: "downy-woodpecker",
+          name: "Downy Woodpecker",
+          type: "Woodpecker",
+          habitat: "Street trees, woodlots, and backyard feeders",
+          season: "Year-round resident",
+          call: "Short pik notes and descending whinny",
+          rarity: "Common",
+          entry: "A compact tree drummer with crisp black-and-white contrast and a surprisingly busy energy.",
+          notes: "Tiny woodpecker, white back, black wings, and males show a small red nape patch.",
+          colors: {
+            body: "#ece8df",
+            wing: "#111722",
+            beak: "#5e6472",
+            head: "#111722",
+            accent: "#d94f55",
+            leg: "#737b8f"
+          },
+          sprite: [
+            "0000000000000000",
+            "0000000222200000",
+            "0000022333332000",
+            "0000223311133200",
+            "0002233111113320",
+            "0022331111111330",
+            "0223311111144430",
+            "0223311111444430",
+            "0222331111444300",
+            "0022333114443000",
+            "0002233444430000",
+            "0000223333300000",
+            "0000022233006000",
+            "0000000000006000",
+            "0000000000000000",
+            "0000000000000000"
+          ]
+        },
+        {
+          id: "014",
+          slug: "barn-owl",
+          name: "Barn Owl",
+          type: "Owl",
+          habitat: "Grasslands, barns, marsh edges, and quiet night zones",
+          season: "Local and uncommon",
+          call: "Raspy screech instead of a hoot",
+          rarity: "Rare",
+          entry: "A ghost-pale night hunter with a heart-shaped face and silent, unsettling grace.",
+          notes: "Pale underparts, tawny upperparts, long wings, and a distinct facial disk.",
+          colors: {
+            body: "#ead6b8",
+            wing: "#b3845a",
+            beak: "#d3a34f",
+            head: "#f5efe3",
+            accent: "#5a4330",
+            leg: "#a67d52"
+          },
+          sprite: [
+            "0000000000000000",
+            "0000000222200000",
+            "0000022333332000",
+            "0000223311133200",
+            "0002233111113320",
+            "0022331111111330",
+            "0222331111114430",
+            "0222331111144430",
+            "0222331111444300",
+            "0022333114443000",
+            "0002233334430000",
+            "0000223333300000",
+            "0000022233006000",
+            "0000000000006000",
+            "0000000000000000",
+            "0000000000000000"
+          ]
+        },
+        {
+          id: "015",
+          slug: "peregrine-falcon",
+          name: "Peregrine Falcon",
+          type: "Raptor",
+          habitat: "City bridges, cliff faces, and tall towers",
+          season: "Year-round in many urban corridors",
+          call: "Fast, sharp kek-kek-kek",
+          rarity: "Uncommon",
+          entry: "A skyline missile that turned New York architecture into nest cliffs and hunting lanes.",
+          notes: "Fast, compact falcon with dark helmet, barred underside, and pointed wings.",
+          colors: {
+            body: "#95a4b5",
+            wing: "#4f586a",
+            beak: "#d4a13c",
+            head: "#212734",
+            accent: "#e8ecef",
+            leg: "#d0a351"
+          },
+          sprite: [
+            "0000000000000000",
+            "0000000222200000",
+            "0000022333332000",
+            "0000223333333200",
+            "0002233311133330",
+            "0022333111113330",
+            "0222331111144430",
+            "0222331111444430",
+            "0222333111444300",
+            "0022333444443000",
+            "0002233333330000",
+            "0000223333300000",
+            "0000022233006000",
+            "0000000000006000",
+            "0000000000000000",
+            "0000000000000000"
+          ]
+        }
+      ];
+
+      const STORAGE_KEY = "aviadex-progress-v1";
+      const status = document.getElementById("status");
+      const logoutButton = document.getElementById("logoutButton");
+      const searchInput = document.getElementById("searchInput");
+      const appNav = document.getElementById("appNav");
+      const rosterGrid = document.getElementById("rosterGrid");
+      const detailPanel = document.getElementById("detailPanel");
+      const entryDetailPanel = document.getElementById("entryDetailPanel");
+      const counts = document.getElementById("counts");
+      const resetButton = document.getElementById("resetButton");
+      const resetButtonRoster = document.getElementById("resetButtonRoster");
+      const rosterPrevButton = document.getElementById("rosterPrevButton");
+      const rosterNextButton = document.getElementById("rosterNextButton");
+      const viewRosterButton = document.getElementById("viewRosterButton");
+      const authConfig = window.AUTH_CONFIG || {};
+      const hasConfig = Boolean(authConfig.supabaseUrl && authConfig.supabaseAnonKey);
+      const VIEW_HASHES = new Set(["home", "roster", "entry"]);
+      const ASSET_VERSION = "2026-05-05-2";
+
+      let progress = loadProgress();
+      let selectedSlug = "blue-jay";
+      let searchQuery = "";
+      let currentView = "home";
+
+      function setStatus(message, type = "") {
+        status.textContent = message;
+        status.className = `status ${type}`.trim();
+      }
+
+      function loadProgress() {
+        try {
+          const parsed = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || "{}");
+          return { sightings: parsed.sightings || {} };
+        } catch (_error) {
+          return { sightings: {} };
+        }
+      }
+
+      function saveProgress() {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+      }
+
+      function getSightings(slug) {
+        return Number(progress.sightings[slug] || 0);
+      }
+
+      function isUnlocked(slug) {
+        return getSightings(slug) > 0;
+      }
+
+      function formatSpeciesId(id) {
+        return `NY-${id}`;
+      }
+
+      function getRarityClass(rarity) {
+        const key = String(rarity || "").trim().toLowerCase();
+        return {
+          common: "rarity-common",
+          uncommon: "rarity-uncommon",
+          rare: "rarity-rare",
+          legendary: "rarity-legendary"
+        }[key] || "rarity-common";
+      }
+
+      function getHashView() {
+        const hash = window.location.hash.replace(/^#/, "").trim().toLowerCase();
+        return VIEW_HASHES.has(hash) ? hash : "home";
+      }
+
+      function syncHashFromView() {
+        const nextHash = `#${currentView}`;
+        if (window.location.hash !== nextHash) {
+          window.history.replaceState({}, "", `${window.location.pathname}${window.location.search}${nextHash}`);
+        }
+      }
+
+      function getFilteredBirds() {
+        const query = searchQuery.trim().toLowerCase();
+
+        if (!query) {
+          return BIRDS;
+        }
+
+        return BIRDS.filter((bird) => {
+          return [
+            bird.name,
+            bird.type,
+            bird.habitat,
+            bird.rarity,
+            bird.season
+          ].some((value) => value.toLowerCase().includes(query));
+        });
+      }
+
+      function ensureValidSelection() {
+        const filtered = getFilteredBirds();
+
+        if (!filtered.length) {
+          selectedSlug = "";
+          return;
+        }
+
+        if (!filtered.some((bird) => bird.slug === selectedSlug)) {
+          selectedSlug = filtered[0].slug;
+        }
+      }
+
+      function selectRelativeBird(step) {
+        const filtered = getFilteredBirds();
+        if (!filtered.length) {
+          return;
+        }
+
+        const currentIndex = filtered.findIndex((bird) => bird.slug === selectedSlug);
+        const safeIndex = currentIndex === -1 ? 0 : currentIndex;
+        const nextIndex = (safeIndex + step + filtered.length) % filtered.length;
+        selectedSlug = filtered[nextIndex].slug;
+      }
+
+      function createSpriteSvg(bird, size = 16, grayscale = false) {
+        const palette = {
+          "1": bird.colors.body,
+          "2": bird.colors.head,
+          "3": bird.colors.accent,
+          "4": bird.colors.wing,
+          "5": bird.colors.beak,
+          "6": bird.colors.leg
+        };
+
+        const rects = [];
+
+        bird.sprite.forEach((row, y) => {
+          row.split("").forEach((cell, x) => {
+            if (cell === "0") {
+              return;
+            }
+
+            const fill = palette[cell] || bird.colors.body;
+            rects.push(`<rect x="${x * size}" y="${y * size}" width="${size}" height="${size}" fill="${fill}" />`);
+          });
+        });
+
+        return `
+          <svg viewBox="0 0 256 256" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="${grayscale ? "filter: grayscale(1);" : ""}">
+            ${rects.join("")}
+          </svg>
+        `;
+      }
+
+      function createLockedOutlineSvg(bird, size = 16) {
+        const rows = bird.sprite.map((row) => row.split("").map((cell) => cell !== "0"));
+        const fillRects = [];
+        const outlineRects = [];
+
+        rows.forEach((row, y) => {
+          row.forEach((filled, x) => {
+            if (!filled) {
+              return;
+            }
+
+            const neighbors = [
+              rows[y - 1]?.[x],
+              rows[y + 1]?.[x],
+              rows[y]?.[x - 1],
+              rows[y]?.[x + 1]
+            ];
+
+            const edge = neighbors.some((neighbor) => !neighbor);
+            const bucket = edge ? outlineRects : fillRects;
+            bucket.push(
+              `<rect x="${x * size}" y="${y * size}" width="${size}" height="${size}" fill="${edge ? "#425b74" : "#f7f1e8"}" />`
+            );
+          });
+        });
+
+        return `
+          <svg class="locked-outline" viewBox="0 0 256 256" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            ${fillRects.join("")}
+            ${outlineRects.join("")}
+          </svg>
+        `;
+      }
+
+      function renderSpriteMarkup(bird, size = 16, locked = false) {
+        const assetSrc = bird.assetPath ? `${bird.assetPath}?v=${ASSET_VERSION}` : "";
+
+        if (locked) {
+          if (bird.assetPath) {
+            return `
+              <div class="locked-asset" aria-hidden="true">
+                <img class="locked-asset-outline" src="${assetSrc}" alt="">
+                <img class="locked-asset-fill" src="${assetSrc}" alt="">
+              </div>
+            `;
+          }
+
+          return createLockedOutlineSvg(bird, size);
+        }
+
+        if (bird.assetPath) {
+          return `<img class="sprite-img" src="${assetSrc}" alt="${bird.name}">`;
+        }
+
+        return createSpriteSvg(bird, size, false);
+      }
+
+      function renderCounts() {
+        const unlocked = BIRDS.filter((bird) => isUnlocked(bird.slug)).length;
+        const totalSightings = Object.values(progress.sightings).reduce((sum, count) => sum + Number(count || 0), 0);
+
+        counts.innerHTML = `
+          <div class="count">
+            <div class="panel-label">Unlocked</div>
+            <div class="count-number">${unlocked}</div>
+            <div class="count-copy">of ${BIRDS.length} New York birds</div>
+          </div>
+          <div class="count">
+            <div class="panel-label">Sightings</div>
+            <div class="count-number">${totalSightings}</div>
+            <div class="count-copy">logged on this device</div>
+          </div>
+          <div class="count">
+            <div class="panel-label">Selected</div>
+            <div class="count-number">${selectedSlug ? formatSpeciesId(BIRDS.find((bird) => bird.slug === selectedSlug).id) : "---"}</div>
+            <div class="count-copy">active field entry</div>
+          </div>
+        `;
+      }
+
+      function renderRosterGrid() {
+        const filtered = getFilteredBirds();
+
+        if (!filtered.length) {
+          rosterGrid.innerHTML = `<div class="empty">No birds match that search. Try a broader New York field term.</div>`;
+          return;
+        }
+
+        rosterGrid.innerHTML = filtered.map((bird) => {
+          const unlocked = isUnlocked(bird.slug);
+          const active = bird.slug === selectedSlug;
+          const displayName = unlocked ? bird.name : "Unknown Bird";
+          const subtitle = unlocked ? bird.type : "Unseen";
+
+          return `
+            <button class="roster-card ${active ? "is-active" : ""} ${unlocked ? "" : "is-locked"}" data-slug="${bird.slug}" type="button">
+              <div class="roster-card-top">
+                <div class="bird-id">${formatSpeciesId(bird.id)}</div>
+                <div class="roster-tag">${unlocked ? `${getSightings(bird.slug)} seen` : "locked"}</div>
+              </div>
+              <div class="roster-sprite">${renderSpriteMarkup(bird, 5, !unlocked)}</div>
+              <div class="roster-name">${displayName}</div>
+              <div class="meta-stack">
+                <div class="roster-meta">${subtitle}</div>
+                ${unlocked ? `<span class="rarity-pill ${getRarityClass(bird.rarity)}">${bird.rarity}</span>` : ""}
+              </div>
+            </button>
+          `;
+        }).join("");
+      }
+
+      function getDetailMarkup() {
+        const bird = BIRDS.find((item) => item.slug === selectedSlug);
+        const unlocked = isUnlocked(bird.slug);
+        const sightings = getSightings(bird.slug);
+
+        return `
+          <div class="detail-top">
+            <div class="panel-label">Field Entry ${formatSpeciesId(bird.id)}</div>
+            <div class="detail-sprite-frame ${unlocked ? "" : "locked"}">
+              ${renderSpriteMarkup(bird, 10, !unlocked)}
+            </div>
+          </div>
+
+          <div class="detail-name">${unlocked ? bird.name : "Unknown Bird"}</div>
+          <div class="detail-subtitle">${unlocked ? bird.type : "Locked until first sighting"}</div>
+          <div class="entry-meta-row">
+            ${unlocked ? `<span class="rarity-pill ${getRarityClass(bird.rarity)}">${bird.rarity}</span>` : ""}
+            <div class="entry-tag">${unlocked ? `${sightings} sighting${sightings === 1 ? "" : "s"}` : "Entry Hidden"}</div>
+          </div>
+
+          <div class="detail-grid">
+            <div class="meta-row">
+              <div class="meta-label">Habitat</div>
+              <div class="meta-value">${unlocked ? bird.habitat : "Classified"}</div>
+            </div>
+            <div class="meta-row">
+              <div class="meta-label">Season</div>
+              <div class="meta-value">${unlocked ? bird.season : "Classified"}</div>
+            </div>
+            <div class="meta-row">
+              <div class="meta-label">Call</div>
+              <div class="meta-value">${unlocked ? bird.call : "Classified"}</div>
+            </div>
+            <div class="meta-row">
+              <div class="meta-label">Entry</div>
+              <div class="meta-value">${unlocked ? bird.entry : "Log a sighting to reveal this bird's field notes."}</div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <div class="entry-nav">
+              <button class="pixel-btn alt" data-action="prev-bird" type="button">Previous</button>
+              <button class="pixel-btn" data-action="next-bird" type="button">Next</button>
+            </div>
+            <button class="pixel-btn" data-action="add-sighting" type="button">${unlocked ? "Add Another Sighting" : "Add Sighting"}</button>
+            <button class="pixel-btn alt" data-action="next-locked" type="button">Jump To Next Locked</button>
+            <div class="notes">${unlocked ? bird.notes : "Locked birds appear as silhouette outlines until you log the first sighting."}</div>
+          </div>
+        `;
+      }
+
+      function bindDetailActions() {
+        const bird = BIRDS.find((item) => item.slug === selectedSlug);
+
+        document.querySelectorAll('[data-action="prev-bird"]').forEach((button) => {
+          button.addEventListener("click", () => {
+            selectRelativeBird(-1);
+            currentView = "entry";
+            renderApp();
+          });
+        });
+
+        document.querySelectorAll('[data-action="next-bird"]').forEach((button) => {
+          button.addEventListener("click", () => {
+            selectRelativeBird(1);
+            currentView = "entry";
+            renderApp();
+          });
+        });
+
+        document.querySelectorAll('[data-action="add-sighting"]').forEach((button) => {
+          button.addEventListener("click", () => {
+            progress.sightings[bird.slug] = getSightings(bird.slug) + 1;
+            saveProgress();
+            renderApp();
+            setStatus(`${bird.name} logged. Total sightings: ${progress.sightings[bird.slug]}.`, "success");
+          });
+        });
+
+        document.querySelectorAll('[data-action="next-locked"]').forEach((button) => {
+          button.addEventListener("click", () => {
+            const nextLocked = BIRDS.find((item) => !isUnlocked(item.slug));
+            if (!nextLocked) {
+              setStatus("All listed New York birds are unlocked.", "success");
+              return;
+            }
+
+            selectedSlug = nextLocked.slug;
+            currentView = "entry";
+            renderApp();
+          });
+        });
+      }
+
+      function renderDetailPanels() {
+        if (!selectedSlug) {
+          const empty = `<div class="empty">Pick a bird entry to inspect it.</div>`;
+          detailPanel.innerHTML = empty;
+          entryDetailPanel.innerHTML = empty;
+          return;
+        }
+
+        const markup = getDetailMarkup();
+        detailPanel.innerHTML = markup;
+        entryDetailPanel.innerHTML = markup;
+
+        bindDetailActions();
+      }
+
+      function renderViews() {
+        const views = {
+          home: document.getElementById("homeView"),
+          roster: document.getElementById("rosterView"),
+          entry: document.getElementById("entryView")
+        };
+
+        Object.entries(views).forEach(([name, element]) => {
+          element.classList.toggle("is-active", name === currentView);
+        });
+
+        appNav.querySelectorAll("[data-view]").forEach((button) => {
+          button.classList.toggle("is-active", button.dataset.view === currentView);
+        });
+
+        syncHashFromView();
+      }
+
+      function renderApp() {
+        ensureValidSelection();
+        renderCounts();
+        renderRosterGrid();
+        renderDetailPanels();
+        renderViews();
+
+        rosterGrid.querySelectorAll("[data-slug]").forEach((button) => {
+          button.addEventListener("click", () => {
+            selectedSlug = button.dataset.slug;
+            currentView = "entry";
+            renderApp();
+          });
+        });
+      }
+
+      if (!hasConfig) {
+        setStatus("Auth is not configured for this environment.", "error");
+        throw new Error("Missing Supabase config");
+      }
+
+      const supabase = createClient(authConfig.supabaseUrl, authConfig.supabaseAnonKey, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
+
+      async function requireSession() {
+        const { data, error } = await supabase.auth.getSession();
+
+        if (error) {
+          setStatus(error.message, "error");
+          return;
+        }
+
+        if (!data.session?.user) {
+          window.location.replace("/?message=denied");
+          return;
+        }
+
+        document.body.classList.remove("page-hidden");
+        currentView = getHashView();
+        renderApp();
+        setStatus("Aviadex online. Add sightings to unlock New York birds.", "success");
+      }
+
+      searchInput.addEventListener("input", (event) => {
+        searchQuery = event.target.value;
+        currentView = "roster";
+        renderApp();
+      });
+
+      rosterPrevButton.addEventListener("click", () => {
+        selectRelativeBird(-1);
+        currentView = "roster";
+        renderApp();
+      });
+
+      rosterNextButton.addEventListener("click", () => {
+        selectRelativeBird(1);
+        currentView = "roster";
+        renderApp();
+      });
+
+      function resetProgress() {
+        progress = { sightings: {} };
+        saveProgress();
+        selectedSlug = "blue-jay";
+        renderApp();
+        setStatus("Local Aviadex progress reset.", "success");
+      }
+
+      resetButton.addEventListener("click", resetProgress);
+      resetButtonRoster.addEventListener("click", resetProgress);
+
+      appNav.querySelectorAll("[data-view]").forEach((button) => {
+        button.addEventListener("click", () => {
+          currentView = button.dataset.view;
+          renderApp();
+        });
+      });
+
+      window.addEventListener("hashchange", () => {
+        const nextView = getHashView();
+        if (nextView !== currentView) {
+          currentView = nextView;
+          renderApp();
+        }
+      });
+
+      viewRosterButton.addEventListener("click", () => {
+        currentView = "roster";
+        renderApp();
+      });
+
+      logoutButton.addEventListener("click", async () => {
+        const { error } = await supabase.auth.signOut();
+
+        if (error) {
+          setStatus(error.message, "error");
+          return;
+        }
+
+        window.location.replace("/");
+      });
+
+      supabase.auth.onAuthStateChange((event, session) => {
+        if (event === "SIGNED_OUT" || !session?.user) {
+          window.location.replace("/?message=denied");
+        }
+      });
+
+      await requireSession();
+    </script>
+  </body>
+</html>

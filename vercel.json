@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/apps/aviadex",
+      "destination": "/apps/aviadex/index.html"
+    },
+    {
+      "source": "/apps/aviadex/",
+      "destination": "/apps/aviadex/index.html"
+    },
+    {
       "source": "/apps/todo",
       "destination": "/apps/todo/index.html"
     },
