@@ -2,6 +2,15 @@
 
 Use this file as the project-side source of truth for future Canidex breed sprites.
 
+Automation lives in:
+
+- [prepare_sprites.py](/Users/mason/Documents/mgcom/apps/canidex/scripts/prepare_sprites.py)
+
+Use it for:
+
+- single-source sprite cleanup and normalization
+- sheet component extraction into normalized breed assets
+
 ## What We Learned
 
 The main failures were not just art-style issues. The real production risks were:
@@ -108,3 +117,30 @@ For final production:
 - clean the alpha correctly
 - normalize to the shared canvas
 - inspect in the actual Canidex roster before considering the asset done
+
+## Script Usage
+
+Normalize one or more source PNGs into production-ready transparent assets:
+
+```bash
+python3 apps/canidex/scripts/prepare_sprites.py normalize \
+  apps/canidex/assets/golden-retriever-001-source.png \
+  --output-dir apps/canidex/assets
+```
+
+Extract a sheet using a JSON array of output filenames in component order:
+
+```bash
+python3 apps/canidex/scripts/prepare_sprites.py extract-sheet \
+  --sheet apps/canidex/assets/sheets/canidex-sheet-01.png \
+  --mapping /tmp/canidex-sheet-01-map.json \
+  --output-dir apps/canidex/assets
+```
+
+The script applies the current production pipeline:
+
+- chroma cleanup using hot pink defaults
+- magenta fringe removal
+- transparent-pixel RGB cleanup
+- tight alpha crop
+- final normalization to `256x256` with a `214px` target footprint
