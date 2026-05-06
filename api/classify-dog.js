@@ -1,28 +1,6 @@
-import { createServer } from "node:http";
-import { readFile } from "node:fs/promises";
-import { existsSync } from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const port = Number(process.env.PORT || 4173);
-
-const MIME_TYPES = {
-  ".html": "text/html; charset=utf-8",
-  ".js": "application/javascript; charset=utf-8",
-  ".json": "application/json; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".svg": "image/svg+xml",
-  ".png": "image/png",
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".ico": "image/x-icon",
-  ".txt": "text/plain; charset=utf-8"
-};
-
 const HF_MODEL_URL = "https://router.huggingface.co/hf-inference/models/google/vit-base-patch16-224";
 const OPENAI_MODEL = "gpt-4.1-mini";
+
 const BREEDS = [
   { slug: "golden-retriever", name: "Golden Retriever" },
   { slug: "french-bulldog", name: "French Bulldog" },
@@ -66,40 +44,6 @@ const LABEL_TO_SLUG = {
   "toy dog, toy": "shih-tzu"
 };
 
-function parseEnv(raw) {
-  return raw.split("\n").reduce((acc, line) => {
-    const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith("#")) {
-      return acc;
-    }
-
-    const separator = trimmed.indexOf("=");
-    if (separator === -1) {
-      return acc;
-    }
-
-    const key = trimmed.slice(0, separator).trim();
-    let value = trimmed.slice(separator + 1).trim();
-
-    if ((value.startsWith("\"") && value.endsWith("\"")) || (value.startsWith("'") && value.endsWith("'"))) {
-      value = value.slice(1, -1);
-    }
-
-    acc[key] = value;
-    return acc;
-  }, {});
-}
-
-async function getEnv() {
-  const envPath = path.join(__dirname, ".env.local");
-  if (!existsSync(envPath)) {
-    return {};
-  }
-
-  const raw = await readFile(envPath, "utf8");
-  return parseEnv(raw);
-}
-
 function normalizeLabel(label) {
   return String(label || "").trim().toLowerCase();
 }
@@ -132,12 +76,12 @@ function mapPredictionOptions(predictions) {
   });
 }
 
-function getClassifierProvider(env) {
-  const configured = String(env.DOG_CLASSIFIER_PROVIDER || "").trim().toLowerCase();
+function getClassifierProvider() {
+  const configured = String(process.env.DOG_CLASSIFIER_PROVIDER || "").trim().toLowerCase();
   if (configured === "openai" || configured === "hf" || configured === "google-vit") {
     return configured;
   }
-  return env.OPENAI_API_KEY ? "openai" : "google-vit";
+  return process.env.OPENAI_API_KEY ? "openai" : "google-vit";
 }
 
 async function readJsonBody(req) {
@@ -145,7 +89,6 @@ async function readJsonBody(req) {
   for await (const chunk of req) {
     chunks.push(chunk);
   }
-
   const raw = Buffer.concat(chunks).toString("utf8");
   return JSON.parse(raw || "{}");
 }
@@ -181,7 +124,7 @@ async function classifyWithHf(imageBuffer, token, providerName = "hf") {
     return {
       ok: false,
       status: 502,
-      error: parsed?.error || "Unexpected classifier response."
+      error: parsed?.error || "Unexpected Hugging Face classifier response."
     };
   }
 
@@ -218,7 +161,10 @@ async function classifyWithOpenAi(imageBase64, mimeType, apiKey) {
           role: "user",
           content: [
             { type: "input_text", text: buildOpenAiPrompt() },
-            { type: "input_image", image_url: `data:${mimeType};base64,${imageBase64}` }
+            {
+              type: "input_image",
+              image_url: `data:${mimeType};base64,${imageBase64}`
+            }
           ]
         }
       ],
@@ -253,7 +199,6 @@ async function classifyWithOpenAi(imageBase64, mimeType, apiKey) {
 
   const raw = payload?.output_text || "";
   let parsed;
-
   try {
     parsed = JSON.parse(raw);
   } catch (_error) {
@@ -293,139 +238,54 @@ async function classifyWithOpenAi(imageBase64, mimeType, apiKey) {
   };
 }
 
-async function handleDogClassification(req, res) {
-  const env = await getEnv();
-  const provider = getClassifierProvider(env);
+async function handler(req, res) {
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    res.status(405).json({ error: "Method not allowed." });
+    return;
+  }
 
   try {
     const body = await readJsonBody(req);
     const imageBase64 = String(body.imageBase64 || "");
     const mimeType = String(body.mimeType || "image/jpeg");
     if (!imageBase64) {
-      res.writeHead(400, { "Content-Type": "application/json; charset=utf-8" });
-      res.end(JSON.stringify({ error: "Missing image payload." }));
+      res.status(400).json({ error: "Missing image payload." });
       return;
     }
 
+    const provider = getClassifierProvider();
     let result;
+
     if (provider === "openai") {
-      const apiKey = env.OPENAI_API_KEY || "";
+      const apiKey = process.env.OPENAI_API_KEY || "";
       if (!apiKey) {
-        res.writeHead(500, { "Content-Type": "application/json; charset=utf-8" });
-        res.end(JSON.stringify({ error: "DOG_CLASSIFIER_PROVIDER is openai but OPENAI_API_KEY is missing." }));
+        res.status(500).json({ error: "DOG_CLASSIFIER_PROVIDER is openai but OPENAI_API_KEY is missing." });
         return;
       }
       result = await classifyWithOpenAi(imageBase64, mimeType, apiKey);
     } else {
-      const token = env.HF_API_TOKEN || env.HUGGINGFACE_API_TOKEN || "";
+      const token = process.env.HF_API_TOKEN || process.env.HUGGINGFACE_API_TOKEN || "";
       if (!token) {
-        res.writeHead(500, { "Content-Type": "application/json; charset=utf-8" });
-        res.end(JSON.stringify({ error: `${provider} classifier selected but HF_API_TOKEN is missing.` }));
+        res.status(500).json({ error: `${provider} classifier selected but HF_API_TOKEN is missing.` });
         return;
       }
       result = await classifyWithHf(Buffer.from(imageBase64, "base64"), token, provider);
     }
 
     if (!result.ok) {
-      res.writeHead(result.status, { "Content-Type": "application/json; charset=utf-8" });
-      res.end(JSON.stringify({ error: result.error }));
+      res.status(result.status).json({ error: result.error });
       return;
     }
 
-    res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
-    res.end(JSON.stringify({
+    res.status(200).json({
       provider: result.provider,
       matched: result.matched,
       predictions: result.predictions
-    }));
-  } catch (error) {
-    res.writeHead(500, { "Content-Type": "application/json; charset=utf-8" });
-    res.end(JSON.stringify({ error: error instanceof Error ? error.message : "Classification failed." }));
-  }
-}
-
-function resolveRoute(urlPath) {
-  const cleanPath = urlPath.split("?")[0];
-
-  if (cleanPath === "/api/auth-config") {
-    return { type: "auth" };
-  }
-
-  if (cleanPath === "/api/classify-dog") {
-    return { type: "classify-dog" };
-  }
-
-  if (cleanPath === "/" || cleanPath === "") {
-    return { type: "file", filePath: path.join(__dirname, "index.html") };
-  }
-
-  if (cleanPath === "/apps" || cleanPath === "/apps/") {
-    return { type: "file", filePath: path.join(__dirname, "apps/index.html") };
-  }
-
-  if (cleanPath === "/apps/aviadex" || cleanPath === "/apps/aviadex/") {
-    return { type: "file", filePath: path.join(__dirname, "apps/aviadex/index.html") };
-  }
-
-  if (cleanPath === "/apps/canidex" || cleanPath === "/apps/canidex/") {
-    return { type: "file", filePath: path.join(__dirname, "apps/canidex/index.html") };
-  }
-
-  if (cleanPath === "/apps/todo" || cleanPath === "/apps/todo/") {
-    return { type: "file", filePath: path.join(__dirname, "apps/todo/index.html") };
-  }
-
-  const relativePath = cleanPath.replace(/^\/+/, "");
-  return { type: "file", filePath: path.join(__dirname, relativePath) };
-}
-
-async function serveFile(filePath, res) {
-  try {
-    const data = await readFile(filePath);
-    const extension = path.extname(filePath).toLowerCase();
-    res.writeHead(200, { "Content-Type": MIME_TYPES[extension] || "application/octet-stream" });
-    res.end(data);
-  } catch (_error) {
-    res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
-    res.end("Not found");
-  }
-}
-
-const server = createServer(async (req, res) => {
-  const route = resolveRoute(req.url || "/");
-
-  if (route.type === "auth") {
-    const env = await getEnv();
-    const payload = {
-      supabaseUrl: env.SUPABASE_URL || "",
-      supabaseAnonKey: env.SUPABASE_ANON_KEY || ""
-    };
-
-    res.writeHead(200, {
-      "Content-Type": "application/javascript; charset=utf-8",
-      "Cache-Control": "no-store"
     });
-    res.end(`window.AUTH_CONFIG = ${JSON.stringify(payload)};`);
-    return;
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : "Classification failed." });
   }
+}
 
-  if (route.type === "classify-dog") {
-    if (req.method !== "POST") {
-      res.writeHead(405, {
-        "Content-Type": "application/json; charset=utf-8",
-        Allow: "POST"
-      });
-      res.end(JSON.stringify({ error: "Method not allowed." }));
-      return;
-    }
-
-    await handleDogClassification(req, res);
-    return;
-  }
-
-  await serveFile(route.filePath, res);
-});
-
-server.listen(port, "127.0.0.1", () => {
-  console.log(`mgcom local server running at http://127.0.0.1:${port}`);
-});
+module.exports = handler;

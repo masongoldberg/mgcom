@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canidex | Mason Goldberg</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/apps/canidex/styles.css">
+  </head>
+  <body class="page-hidden">
+    <div class="grid-overlay"></div>
+
+    <div class="shell">
+      <div class="topbar">
+        <a class="top-link" href="/apps">Apps</a>
+        <button class="logout-btn" id="logoutButton" type="button">Log Out</button>
+      </div>
+
+      <main class="hud">
+        <section class="hero" id="hero">
+          <div class="eyebrow">Breed Field Dex v0.1</div>
+          <h1>Canidex</h1>
+          <p class="subtitle">Spot a dog, identify the breed, unlock the entry, and save the sighting. Built like a collectible dex, tuned like a lightweight mobile product.</p>
+        </section>
+
+        <section class="view" id="homeView">
+          <section class="counts" id="counts"></section>
+          <section class="home-stack">
+            <section class="identify-panel">
+              <div class="panel-head compact">
+                <div>
+                  <div class="panel-label">Identify A Dog</div>
+                  <div class="panel-title">Add a new sighting from a photo</div>
+                </div>
+              </div>
+              <div class="classifier-copy">Use the camera or camera roll, then confirm the match and save the dog with an optional name, photo, and note.</div>
+              <input class="file-input" id="dogUploadInput" type="file" accept="image/*">
+              <input class="file-input" id="dogCameraInput" type="file" accept="image/*" capture="environment">
+              <div class="identify-actions">
+                <button class="pixel-btn alt" id="cameraDogButton" type="button">Take Dog Photo</button>
+                <button class="pixel-btn" id="uploadDogButton" type="button">Upload Dog Photo</button>
+              </div>
+              <div class="classifier-result" id="classifierResult" hidden></div>
+            </section>
+            <section class="home-grid">
+              <aside class="panel" id="homePanel"></aside>
+              <section class="panel" id="activityPanel"></section>
+            </section>
+            <section class="utility-bar">
+              <div class="utility-copy">All progress and saved sightings stay on this device for now.</div>
+              <button class="utility-btn" id="resetButton" type="button">Reset Device Progress</button>
+            </section>
+          </section>
+        </section>
+
+        <section class="view" id="rosterView">
+          <section class="dex-roster">
+            <div class="panel-head">
+              <div class="panel-label">Breed Roster</div>
+            </div>
+            <div class="roster-toolbar">
+              <input class="search" id="searchInput" type="search" placeholder="Search dog breeds">
+              <button class="filter-chip" id="seenOnlyButton" type="button" aria-pressed="false">Seen Only: Off</button>
+            </div>
+            <div class="roster-grid" id="rosterGrid"></div>
+            <div class="roster-footer-actions">
+              <button class="utility-btn subtle" id="resetButtonRoster" type="button">Reset Progress</button>
+            </div>
+          </section>
+        </section>
+
+        <div class="status" id="status"></div>
+        <div class="footer">Dog-breed progress and saved sightings are stored on this device.</div>
+      </main>
+
+      <nav class="bottom-nav" id="appNav" aria-label="Primary">
+        <button class="nav-pill" data-view="home" type="button">Home</button>
+        <button class="nav-pill" data-view="roster" type="button">Roster</button>
+      </nav>
+    </div>
+
+    <div class="modal-layer" id="breedModal" aria-hidden="true">
+      <div class="modal-backdrop" data-action="close-breed-modal"></div>
+      <section class="modal-shell">
+        <div class="modal-grip" aria-hidden="true"></div>
+        <div class="modal-top">
+          <div class="panel-label">Breed Entry</div>
+          <button class="modal-close" id="closeBreedModalButton" type="button">Close</button>
+        </div>
+        <div id="breedModalContent"></div>
+      </section>
+    </div>
+
+    <div class="modal-layer" id="sightingModal" aria-hidden="true">
+      <div class="modal-backdrop" data-action="close-sighting-modal"></div>
+      <section class="modal-shell">
+        <div class="modal-grip" aria-hidden="true"></div>
+        <div class="modal-top">
+          <div class="panel-label">Save Sighting</div>
+          <button class="modal-close" id="closeSightingModalButton" type="button">Close</button>
+        </div>
+        <div id="sightingModalContent"></div>
+      </section>
+    </div>
+
+    <div class="reward-layer" id="rewardLayer" aria-hidden="true">
+      <div class="reward-backdrop" data-action="dismiss-reward"></div>
+      <section class="reward-card">
+        <div class="reward-burst">
+          <span class="reward-star s1" style="top:14%; left:10%;"></span>
+          <span class="reward-star s2" style="top:22%; right:12%;"></span>
+          <span class="reward-star s3" style="top:56%; left:8%;"></span>
+          <span class="reward-star s4" style="top:62%; right:10%;"></span>
+          <span class="reward-star s5" style="bottom:16%; left:20%;"></span>
+          <span class="reward-star s6" style="bottom:12%; right:22%;"></span>
+        </div>
+        <div id="rewardContent"></div>
+        <button class="pixel-btn" id="dismissRewardButton" type="button">Continue</button>
+      </section>
+    </div>
+
+    <script src="/api/auth-config"></script>
+    <script type="module" src="/apps/canidex/app.js"></script>
+  </body>
+</html>

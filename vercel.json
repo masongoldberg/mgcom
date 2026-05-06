@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/apps/canidex",
+      "destination": "/apps/canidex/index.html"
+    },
+    {
+      "source": "/apps/canidex/",
+      "destination": "/apps/canidex/index.html"
+    },
+    {
       "source": "/apps/aviadex",
       "destination": "/apps/aviadex/index.html"
     },
