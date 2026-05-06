@@ -8,6 +8,7 @@ const status = document.getElementById("status");
 const logoutButton = document.getElementById("logoutButton");
 const searchInput = document.getElementById("searchInput");
 const appNav = document.getElementById("appNav");
+const bottomIdentifyButton = document.getElementById("bottomIdentifyButton");
 const hero = document.getElementById("hero");
 const rosterGrid = document.getElementById("rosterGrid");
 const homePanel = document.getElementById("homePanel");
@@ -933,6 +934,9 @@ appNav.querySelectorAll("[data-view]").forEach((button) => {
     }
     renderApp();
   });
+});
+bottomIdentifyButton.addEventListener("click", () => {
+  dogCameraInput.click();
 });
 closeBreedModalButton.addEventListener("click", closeBreedModal);
 breedModal.addEventListener("click", (event) => {
